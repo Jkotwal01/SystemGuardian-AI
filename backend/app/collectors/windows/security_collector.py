@@ -112,7 +112,7 @@ class SecurityCollector(BaseCollector, EventNormalizerMixin):
 
     # ── Private helpers ──────────────────────────────────────────────────────
 
-    def _win32_event_to_dict(self, ev: Any) -> dict[str, Any]:
+    def _win32_event_to_dict(self, ev: Any) -> dict[str, Any]:  # noqa: ANN401
         """Convert a win32evtlog record to a JSON-serialisable dict."""
         inserts: list[str] = []
         if ev.StringInserts:
@@ -126,7 +126,7 @@ class SecurityCollector(BaseCollector, EventNormalizerMixin):
             "ComputerName": ev.ComputerName,
         }
 
-    def _parse_event_time(self, ev: Any) -> datetime:
+    def _parse_event_time(self, ev: Any) -> datetime:  # noqa: ANN401
         """Parse win32 SYSTEMTIME into an aware UTC datetime."""
         try:
             # pywintypes.Time is a COM date type
@@ -143,7 +143,7 @@ class SecurityCollector(BaseCollector, EventNormalizerMixin):
         except Exception:  # noqa: BLE001
             return datetime.now(UTC)
 
-    def _is_old_event(self, ev: Any) -> bool:
+    def _is_old_event(self, ev: Any) -> bool:  # noqa: ANN401
         """True if event is older than EVENT_POLL_INTERVAL_SECONDS."""
         try:
             ts = ev.TimeGenerated

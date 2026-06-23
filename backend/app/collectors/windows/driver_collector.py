@@ -105,7 +105,7 @@ class DriverCollector(BaseCollector, EventNormalizerMixin):
         except Exception:  # noqa: BLE001
             return False
 
-    def _win32_event_to_dict(self, ev: Any) -> dict[str, Any]:
+    def _win32_event_to_dict(self, ev: Any) -> dict[str, Any]:  # noqa: ANN401
         inserts: list[str] = []
         if ev.StringInserts:
             inserts = [str(s) for s in ev.StringInserts]
@@ -118,7 +118,7 @@ class DriverCollector(BaseCollector, EventNormalizerMixin):
             "ComputerName": ev.ComputerName,
         }
 
-    def _parse_event_time(self, ev: Any) -> datetime:
+    def _parse_event_time(self, ev: Any) -> datetime:  # noqa: ANN401
         try:
             ts = ev.TimeGenerated
             return datetime(
@@ -133,7 +133,7 @@ class DriverCollector(BaseCollector, EventNormalizerMixin):
         except Exception:  # noqa: BLE001
             return datetime.now(UTC)
 
-    def _is_old_event(self, ev: Any) -> bool:
+    def _is_old_event(self, ev: Any) -> bool:  # noqa: ANN401
         try:
             ts = ev.TimeGenerated
             event_time = datetime(

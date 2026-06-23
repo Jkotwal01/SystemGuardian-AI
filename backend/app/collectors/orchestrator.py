@@ -91,7 +91,7 @@ class CollectorOrchestrator:
         raw_results = await asyncio.gather(*tasks, return_exceptions=True)
 
         results: list[CollectorResult] = []
-        for cls, result in zip(self._collector_classes, raw_results):
+        for cls, result in zip(self._collector_classes, raw_results, strict=False):
             if isinstance(result, CollectorResult):
                 results.append(result)
             else:

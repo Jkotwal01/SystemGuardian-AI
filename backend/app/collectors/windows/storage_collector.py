@@ -36,8 +36,6 @@ class StorageCollector(BaseCollector, EventNormalizerMixin):
     module = EventCategory.STORAGE
 
     async def _collect(self) -> list[EventModel]:
-        events: list[EventModel] = []
-
         # ── Per-partition usage ──────────────────────────────────────────────
         partitions: list[dict[str, Any]] = []
         max_severity = Severity.INFO
@@ -93,9 +91,13 @@ class StorageCollector(BaseCollector, EventNormalizerMixin):
         warn_parts = [p for p in partitions if p["percent_used"] >= DISK_WARN_PERCENT]
 
         if critical_parts:
-            title = f"Storage CRITICAL — {critical_parts[0]['device']} at {critical_parts[0]['percent_used']:.0f}%"
+            dev = critical_parts[0]['device']
+            pct = critical_parts[0]['percent_used']
+            title = f"Storage CRITICAL — {dev} at {pct:.0f}%"
         elif warn_parts:
-            title = f"Storage Warning — {warn_parts[0]['device']} at {warn_parts[0]['percent_used']:.0f}%"
+            dev = warn_parts[0]['device']
+            pct = warn_parts[0]['percent_used']
+            title = f"Storage Warning — {dev} at {pct:.0f}%"
         else:
             avg = sum(p["percent_used"] for p in partitions) / max(len(partitions), 1)
             title = f"Storage Healthy — {len(partitions)} partitions, avg {avg:.0f}% used"
