@@ -1,5 +1,7 @@
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
+
 
 class HardwareMetricBase(BaseModel):
     cpu_usage_percent: float
@@ -10,14 +12,17 @@ class HardwareMetricBase(BaseModel):
     battery_percent: float | None = None
     is_plugged_in: bool | None = None
 
+
 class HardwareMetricCreate(HardwareMetricBase):
     pass
+
 
 class HardwareMetricRead(HardwareMetricBase):
     id: str
     timestamp: datetime
-    
+
     model_config = ConfigDict(from_attributes=True)
+
 
 class DiskMetricBase(BaseModel):
     device: str
@@ -29,14 +34,17 @@ class DiskMetricBase(BaseModel):
     read_bytes_per_sec: float
     write_bytes_per_sec: float
 
+
 class DiskMetricCreate(DiskMetricBase):
     pass
+
 
 class DiskMetricRead(DiskMetricBase):
     id: str
     timestamp: datetime
-    
+
     model_config = ConfigDict(from_attributes=True)
+
 
 class NetworkMetricBase(BaseModel):
     interface: str
@@ -47,11 +55,13 @@ class NetworkMetricBase(BaseModel):
     errors_in: float
     errors_out: float
 
+
 class NetworkMetricCreate(NetworkMetricBase):
     pass
+
 
 class NetworkMetricRead(NetworkMetricBase):
     id: str
     timestamp: datetime
-    
+
     model_config = ConfigDict(from_attributes=True)

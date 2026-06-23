@@ -1,17 +1,21 @@
-from typing import Generic, TypeVar, Type, Sequence
-from sqlalchemy import select, func
+from collections.abc import Sequence
+from typing import Generic, TypeVar
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 T = TypeVar("T")
+
 
 class BaseRepository(Generic[T]):
     """
     Generic async repository. Provides CRUD for any ORM model.
     All domain-specific queries live in subclasses.
     """
-    model: Type[T]
 
-    def __init__(self, session: AsyncSession):
+    model: type[T]
+
+    def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def get_by_id(self, id: str) -> T | None:

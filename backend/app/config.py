@@ -1,10 +1,12 @@
 import os
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
+
+from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import computed_field, Field
 
 from app.domain.enums import AIProvider
+
 
 class Settings(BaseSettings):
     # Computed paths
@@ -33,10 +35,18 @@ class Settings(BaseSettings):
     # Monitoring
     METRICS_INTERVAL_SECONDS: int = 30
     EVENT_POLL_INTERVAL_SECONDS: int = 60
-    ENABLED_MODULES: list[str] = Field(default_factory=lambda: [
-        "security", "performance", "hardware", "network",
-        "application", "storage", "driver", "power"
-    ])
+    ENABLED_MODULES: list[str] = Field(
+        default_factory=lambda: [
+            "security",
+            "performance",
+            "hardware",
+            "network",
+            "application",
+            "storage",
+            "driver",
+            "power",
+        ]
+    )
 
     # AI
     AI_PROVIDER: AIProvider = AIProvider.OLLAMA
@@ -50,9 +60,8 @@ class Settings(BaseSettings):
     EVENT_RETENTION_DAYS: int = 90
     METRIC_RETENTION_DAYS: int = 30
 
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -6,14 +6,15 @@ All must pass before Phase 1 work begins.
 
 Run with:  pytest tests/test_phase0_gate.py -v
 """
+
 from __future__ import annotations
 
 import importlib
 import sys
 from pathlib import Path
 
-
 # ─── Environment Checks ───────────────────────────────────────────────────────
+
 
 def test_python_version_is_311_or_higher() -> None:
     """Python version must be 3.11+ for StrEnum and other modern features."""
@@ -92,9 +93,7 @@ def test_backend_package_structure() -> None:
     backend_root = Path(__file__).parent.parent  # backend/
     for d in required_dirs:
         assert (backend_root / d).is_dir(), f"Missing directory: backend/{d}"
-        assert (backend_root / d / "__init__.py").exists(), (
-            f"Missing __init__.py in: backend/{d}"
-        )
+        assert (backend_root / d / "__init__.py").exists(), f"Missing __init__.py in: backend/{d}"
 
 
 def test_scripts_exist() -> None:
@@ -126,6 +125,7 @@ def test_editorconfig_exists() -> None:
 def test_root_package_json_exists() -> None:
     """Root package.json must exist with workspaces config."""
     import json
+
     pkg_path = ROOT / "package.json"
     assert pkg_path.exists()
     pkg = json.loads(pkg_path.read_text())
@@ -134,6 +134,7 @@ def test_root_package_json_exists() -> None:
 
 
 # ─── App Startup Checks ───────────────────────────────────────────────────────
+
 
 def test_app_main_importable() -> None:
     """app.main must be importable without errors."""
@@ -144,6 +145,7 @@ def test_app_main_importable() -> None:
 def test_health_endpoint_returns_ok() -> None:
     """GET /health must return 200 {"status": "ok"}."""
     from fastapi.testclient import TestClient
+
     from app.main import app
 
     with TestClient(app) as client:

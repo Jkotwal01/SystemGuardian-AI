@@ -1,14 +1,19 @@
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
+
 from app.domain.enums import IncidentStatus, Severity
+
 
 class IncidentBase(BaseModel):
     title: str
     description: str
     severity: Severity
 
+
 class IncidentCreate(IncidentBase):
     pass
+
 
 class IncidentRead(IncidentBase):
     id: str

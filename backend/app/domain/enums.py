@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+
 class EventCategory(StrEnum):
     SECURITY = "security"
     PERFORMANCE = "performance"
@@ -12,6 +13,7 @@ class EventCategory(StrEnum):
     STABILITY = "stability"
     INFORMATIONAL = "informational"
 
+
 class Severity(StrEnum):
     CRITICAL = "critical"
     HIGH = "high"
@@ -19,17 +21,20 @@ class Severity(StrEnum):
     LOW = "low"
     INFO = "info"
 
+
 class IncidentStatus(StrEnum):
     OPEN = "open"
     INVESTIGATING = "investigating"
     RESOLVED = "resolved"
     DISMISSED = "dismissed"
 
+
 class AIProvider(StrEnum):
     OLLAMA = "ollama"
     GEMINI = "gemini"
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
+
 
 class ReportType(StrEnum):
     DAILY = "daily"

@@ -1,14 +1,16 @@
 from datetime import datetime
-from sqlalchemy import String, Float, DateTime
+
+from sqlalchemy import DateTime, Float, String
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
 from app.core.database import Base
 from app.models.event import uuid4_hex
 
+
 class NetworkMetricModel(Base):
     __tablename__ = "network_metrics"
-    
+
     id: Mapped[str] = mapped_column(String, primary_key=True, default=uuid4_hex)
     interface: Mapped[str] = mapped_column(String)
     bytes_sent_per_sec: Mapped[float] = mapped_column(Float)

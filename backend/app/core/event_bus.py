@@ -1,6 +1,8 @@
 import asyncio
 from collections import defaultdict
-from typing import Callable, Any, TypeVar, Coroutine
+from collections.abc import Callable, Coroutine
+from typing import Any, TypeVar
+
 import structlog
 
 logger = structlog.get_logger()
@@ -8,13 +10,17 @@ logger = structlog.get_logger()
 # Generic type for the event payload
 TEventPayload = TypeVar("TEventPayload")
 
+
 class EventBus:
     """
     Async in-process event bus. Decouples producers from consumers.
     Supports subscribing to string-based topic names with async handlers.
     """
+
     def __init__(self) -> None:
-        self._subscribers: dict[str, list[Callable[[Any], Coroutine[Any, Any, None]]]] = defaultdict(list)
+        self._subscribers: dict[str, list[Callable[[Any], Coroutine[Any, Any, None]]]] = (
+            defaultdict(list)
+        )
 
     def subscribe(self, topic: str, handler: Callable[[Any], Coroutine[Any, Any, None]]) -> None:
         """Register an async handler for a specific topic."""
@@ -28,7 +34,7 @@ class EventBus:
             self._subscribers[topic].remove(handler)
             logger.debug("event_bus.unsubscribed", topic=topic, handler=handler.__name__)
 
-    async def publish(self, topic: str, payload: Any) -> None:
+    async def publish(self, topic: str, payload: Any) -> None:  # noqa: ANN401
         """
         Publish an event payload to all handlers subscribed to the topic.
         Handlers are executed concurrently.
@@ -44,11 +50,18 @@ class EventBus:
             try:
                 await handler(payload)
             except Exception as e:
-                logger.error("event_bus.handler_failed", topic=topic, handler=handler.__name__, error=str(e), exc_info=True)
+                logger.error(
+                    "event_bus.handler_failed",
+                    topic=topic,
+                    handler=handler.__name__,
+                    error=str(e),
+                    exc_info=True,
+                )
 
         tasks = [safe_execute(h) for h in handlers]
         await asyncio.gather(*tasks)
         logger.debug("event_bus.published", topic=topic, handlers_count=len(handlers))
+
 
 # Global instance for the application
 event_bus = EventBus()

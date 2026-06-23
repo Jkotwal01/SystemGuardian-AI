@@ -1,14 +1,24 @@
-import os
+from collections.abc import AsyncGenerator
 from pathlib import Path
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, create_async_engine, async_sessionmaker
+
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import DeclarativeBase
+
 
 class Base(DeclarativeBase):
     """All ORM models inherit from this single base."""
+
     pass
+
 
 class DatabaseManager:
     """Singleton. Manages engine lifecycle and session factory."""
+
     _engine: AsyncEngine | None = None
     _session_factory: async_sessionmaker[AsyncSession] | None = None
 
@@ -18,20 +28,17 @@ class DatabaseManager:
             return
 
         db_url = f"sqlite+aiosqlite:///{db_path}"
-        
+
         # SQLite specific config for async
         cls._engine = create_async_engine(
             db_url,
             echo=False,
             # Enable foreign keys for SQLite
-            connect_args={"check_same_thread": False}
+            connect_args={"check_same_thread": False},
         )
-        
+
         cls._session_factory = async_sessionmaker(
-            bind=cls._engine,
-            class_=AsyncSession,
-            expire_on_commit=False,
-            autoflush=False
+            bind=cls._engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
         )
 
     @classmethod
@@ -47,7 +54,6 @@ class DatabaseManager:
             cls._engine = None
             cls._session_factory = None
 
-from typing import AsyncGenerator
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """Dependency injection function for FastAPI"""

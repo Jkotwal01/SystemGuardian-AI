@@ -1,6 +1,7 @@
-from typing import Any
 from datetime import datetime
-from sqlalchemy import String, Float, DateTime, Enum, JSON
+from typing import Any
+
+from sqlalchemy import JSON, DateTime, Enum, Float, String
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
@@ -8,9 +9,10 @@ from app.core.database import Base
 from app.domain.enums import EventCategory, Severity
 from app.models.event import uuid4_hex
 
+
 class PredictionModel(Base):
     __tablename__ = "predictions"
-    
+
     id: Mapped[str] = mapped_column(String, primary_key=True, default=uuid4_hex)
     component: Mapped[EventCategory] = mapped_column(Enum(EventCategory))
     failure_probability: Mapped[float] = mapped_column(Float)
