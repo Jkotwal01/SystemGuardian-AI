@@ -20,7 +20,7 @@ from app.domain.enums import EventCategory, Severity
 from app.models.event import EventModel
 
 if sys.platform == "win32":
-    import win32evtlog
+    import win32evtlog  # pyright: ignore[reportMissingModuleSource]
 
 logger = structlog.get_logger()
 
