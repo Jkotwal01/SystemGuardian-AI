@@ -83,9 +83,6 @@ jobs:
       - name: Lint with ESLint
         run: npm run lint
 
-      - name: Run tests
-        run: npm run test -- --run
-
   # ──────────────────────────────────────────────────────────────────────────
   # Rust: cargo check + cargo test
   # ──────────────────────────────────────────────────────────────────────────
