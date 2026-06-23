@@ -2,7 +2,6 @@
   "name": "system-guardian-ai",
   "version": "0.1.0",
   "private": true,
-  "description": "AI-powered operating system intelligence platform",
   "workspaces": [
     "apps/desktop/frontend"
   ],
@@ -10,20 +9,8 @@
     "dev": "pwsh scripts/dev.ps1",
     "test": "pwsh scripts/test.ps1",
     "build": "pwsh scripts/build.ps1",
-    "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
-  },
-  "engines": {
-    "node": ">=20.0.0",
-    "npm": ">=10.0.0"
-  },
-  "keywords": [
-    "system-monitoring",
-    "ai",
-    "desktop",
-    "tauri",
-    "windows"
-  ],
-  "author": "SystemGuardian AI Team",
-  "license": "UNLICENSED"
+    "frontend:dev": "npm run dev --workspace=apps/desktop/frontend",
+    "frontend:build": "npm run build --workspace=apps/desktop/frontend",
+    "frontend:lint": "npm run lint --workspace=apps/desktop/frontend"
+  }
 }
