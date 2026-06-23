@@ -145,12 +145,18 @@ def test_app_main_importable() -> None:
 def test_health_endpoint_returns_ok() -> None:
     """GET /health must return 200 {"status": "ok"}."""
     from fastapi.testclient import TestClient
+    from unittest.mock import AsyncMock, patch
 
     from app.main import app
 
-    with TestClient(app) as client:
-        response = client.get("/health")
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "ok"
-        assert "version" in data
+    with (
+        patch("app.main.DatabaseManager.initialize", new_callable=AsyncMock),
+        patch("app.main.DatabaseManager.close", new_callable=AsyncMock),
+        patch("app.main.CollectorOrchestrator.initialize", new_callable=AsyncMock),
+    ):
+        with TestClient(app) as client:
+            response = client.get("/health")
+            assert response.status_code == 200
+            data = response.json()
+            assert data["status"] == "ok"
+            assert "version" in data
