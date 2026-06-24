@@ -1,60 +1,56 @@
+"use client";
+
+import { useEffect } from "react";
+import { HealthScoreRing } from "@/components/dashboard/HealthScoreRing";
+import { MetricsStrip } from "@/components/dashboard/MetricsStrip";
+import { RecentEvents } from "@/components/dashboard/RecentEvents";
+import { useWebSockets } from "@/hooks/use-websocket";
+import { useHealthStore } from "@/stores/health-store";
+import { useEventStore } from "@/stores/event-store";
+
 export default function OverviewPage() {
+  const { latestScore, fetchInitial: fetchHealth } = useHealthStore();
+  const { fetchInitial: fetchEvents } = useEventStore();
+  
+  // Connect WebSockets
+  useWebSockets();
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchHealth();
+    fetchEvents();
+  }, [fetchHealth, fetchEvents]);
+
   return (
-    <div className="p-6 flex flex-col gap-6">
-      <div
-        className="glass-card p-6 flex items-start gap-4 animate-fade-in"
-        style={{ borderColor: "hsl(220 80% 50% / 0.2)" }}
-      >
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-lg"
-          style={{
-            background: "hsl(220 80% 50% / 0.15)",
-            border: "1px solid hsl(220 80% 50% / 0.3)",
-          }}
-        >
-          🚀
+    <div className="p-6 flex flex-col gap-6 h-full max-h-full overflow-hidden">
+      <div className="grid grid-cols-[300px_1fr] gap-6">
+        {/* Main Health Score */}
+        <div className="glass-card p-6 flex flex-col items-center justify-center animate-fade-in gap-4">
+          <h2 className="text-sm font-semibold tracking-wide uppercase opacity-70">
+            System Health
+          </h2>
+          <HealthScoreRing 
+            score={latestScore?.overall_score ?? 0} 
+            size={180} 
+          />
         </div>
-        <div className="flex flex-col gap-1">
-          <p
-            className="font-semibold"
-            style={{ color: "var(--color-text-primary)" }}
-          >
-            Phase 4 Complete — Tauri Shell Ready
-          </p>
-          <p
-            style={{
-              fontSize: "var(--text-sm)",
-              color: "var(--color-text-secondary)",
-            }}
-          >
-            The Next.js App Router structure is in place, the sidebar navigates to all routes, and the Tauri frameless window with custom controls is fully operational.
-          </p>
+
+        {/* Top Strip */}
+        <div className="flex flex-col gap-6">
+          <MetricsStrip />
+          
+          <div className="flex-1 glass-card p-6 flex items-center justify-center opacity-50 animate-fade-in stagger-2">
+            <p className="text-sm text-center">
+              Active AI Predictions & Anomalies<br />
+              <span className="text-xs opacity-70">(Coming in Phase 6)</span>
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "Overall Health", value: "--", unit: "" },
-          { label: "CPU Usage", value: "--%", unit: "" },
-          { label: "RAM Usage", value: "--%", unit: "" },
-        ].map(({ label, value }, i) => (
-          <div key={label} className={`glass-card p-5 flex flex-col gap-3 stagger-${i + 1} animate-fade-in`}>
-            <p
-              style={{
-                fontSize: "var(--text-xs)",
-                color: "var(--color-text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}
-            >
-              {label}
-            </p>
-            <p className="metric-value" style={{ color: "var(--color-text-primary)" }}>
-              {value}
-            </p>
-            <div className="ai-thinking rounded-full" style={{ height: "2px", borderRadius: "1px" }} />
-          </div>
-        ))}
+      {/* Bottom Half */}
+      <div className="flex-1 min-h-0">
+        <RecentEvents />
       </div>
     </div>
   );

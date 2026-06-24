@@ -9,6 +9,7 @@ Lifecycle:
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -17,6 +18,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import v1_router
+from app.api.v1.events import router as events_router
+from app.api.v1.health_score import router as health_router
+from app.api.v1.incidents import router as incidents_router
+from app.api.websocket import setup_websocket_bridge, ws_router
 from app.collectors.orchestrator import CollectorOrchestrator
 from app.config import get_settings
 from app.core.database import DatabaseManager
@@ -75,6 +80,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         session_factory=session_factory,
     )
     _scheduler.start()
+    # Set up WebSocket EventBus bridge
+    asyncio.create_task(setup_websocket_bridge())
     logger.info("scheduler_started", jobs=_scheduler.get_job_ids())
 
     logger.info("system_guardian_ready")
@@ -126,7 +133,11 @@ def create_app() -> FastAPI:
         }
 
     # ── API v1 routers ────────────────────────────────────────────────────────
-    application.include_router(v1_router)
+    # API Routers
+    application.include_router(events_router, prefix="/api/v1")
+    application.include_router(incidents_router, prefix="/api/v1")
+    application.include_router(health_router, prefix="/api/v1")
+    application.include_router(ws_router)
 
     return application
 

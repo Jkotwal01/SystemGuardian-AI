@@ -11,8 +11,10 @@ class EventRepository(BaseRepository[EventModel]):
     model = EventModel
 
     async def get_by_severity(self, severity: Severity, limit: int = 50) -> list[EventModel]:
+        from sqlalchemy.orm import selectinload
         stmt = (
             select(self.model)
+            .options(selectinload(self.model.ai_insight))
             .where(self.model.severity == severity)
             .order_by(desc(self.model.occurred_at))
             .limit(limit)
@@ -21,8 +23,10 @@ class EventRepository(BaseRepository[EventModel]):
         return list(result.scalars().all())
 
     async def get_since(self, since: datetime) -> list[EventModel]:
+        from sqlalchemy.orm import selectinload
         stmt = (
             select(self.model)
+            .options(selectinload(self.model.ai_insight))
             .where(self.model.occurred_at >= since)
             .order_by(self.model.occurred_at)
         )
@@ -36,8 +40,10 @@ class EventRepository(BaseRepository[EventModel]):
 
     async def get_by_category(self, category: EventCategory, hours: int = 24) -> list[EventModel]:
         cutoff = datetime.now(tz=UTC) - timedelta(hours=hours)
+        from sqlalchemy.orm import selectinload
         stmt = (
             select(self.model)
+            .options(selectinload(self.model.ai_insight))
             .where(self.model.category == category)
             .where(self.model.occurred_at >= cutoff)
             .order_by(desc(self.model.occurred_at))
