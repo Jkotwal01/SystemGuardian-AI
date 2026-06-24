@@ -18,8 +18,8 @@ from __future__ import annotations
 from datetime import UTC
 
 import structlog
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore[import-untyped]
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.collectors.orchestrator import CollectorOrchestrator
 from app.config import Settings
@@ -47,7 +47,7 @@ class MonitoringScheduler:
         pipeline: EventProcessingPipeline,
         health_engine: HealthScoreEngine,
         event_bus: EventBus,
-        session_factory: async_sessionmaker,
+        session_factory: async_sessionmaker[AsyncSession],
     ) -> None:
         self._settings = settings
         self._orchestrator = orchestrator

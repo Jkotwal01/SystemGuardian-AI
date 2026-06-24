@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,7 +14,7 @@ from app.schemas.health_score import HealthScoreHistoryResponse, HealthScoreRead
 router = APIRouter(prefix="/health-score", tags=["health"])
 
 
-async def get_session() -> AsyncSession:  # type: ignore[return]
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with DatabaseManager.get_session_factory()() as session:
         yield session
 

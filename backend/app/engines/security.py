@@ -14,7 +14,7 @@ When a threat is detected, publishes Events.THREAT_DETECTED.
 from __future__ import annotations
 
 import structlog
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.event_bus import EventBus
 from app.domain.enums import EventCategory, Severity
@@ -68,7 +68,7 @@ class SecurityEngine:
     def __init__(
         self,
         event_bus: EventBus,
-        session_factory: async_sessionmaker,
+        session_factory: async_sessionmaker[AsyncSession],
     ) -> None:
         self._bus = event_bus
         self._session_factory = session_factory

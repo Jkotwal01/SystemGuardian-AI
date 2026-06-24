@@ -8,6 +8,7 @@ collector never cascades to others (asyncio.gather with return_exceptions=True).
 from __future__ import annotations
 
 import asyncio
+from typing import Any
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -153,7 +154,7 @@ class CollectorOrchestrator:
     def is_initialized(self) -> bool:
         return self._initialized
 
-    async def run_event_collectors(self, session: AsyncSession) -> list:
+    async def run_event_collectors(self, session: AsyncSession) -> list[Any]:
         """
         Run collectors and return raw EventModel objects (without saving them).
         The pipeline is responsible for processing and persisting the events.

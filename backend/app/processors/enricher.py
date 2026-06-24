@@ -13,6 +13,7 @@ from __future__ import annotations
 import platform
 import socket
 from datetime import UTC, datetime
+from typing import Any
 
 import structlog
 
@@ -47,7 +48,7 @@ class EventEnricher:
         Mutate the event in-place with enrichment metadata.
         Returns the same event for chaining convenience.
         """
-        existing_meta: dict = dict(event.metadata_ or {})
+        existing_meta: dict[str, Any] = dict(event.metadata_ or {})
 
         enrichment = {
             "hostname": self._hostname,

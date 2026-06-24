@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +15,7 @@ from app.schemas.event import EventListResponse, EventRead
 router = APIRouter(prefix="/events", tags=["events"])
 
 
-async def get_session() -> AsyncSession:  # type: ignore[return]
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with DatabaseManager.get_session_factory()() as session:
         yield session
 

@@ -10,14 +10,14 @@ from app.domain.enums import AIProvider
 
 class Settings(BaseSettings):
     # Computed paths
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def db_path(self) -> Path:
         base_dir = Path(os.environ.get("APPDATA", Path.home())) / "SystemGuardian"
         base_dir.mkdir(parents=True, exist_ok=True)
         return base_dir / "data.db"
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def logs_dir(self) -> Path:
         logs_dir = Path(os.environ.get("APPDATA", Path.home())) / "SystemGuardian" / "logs"

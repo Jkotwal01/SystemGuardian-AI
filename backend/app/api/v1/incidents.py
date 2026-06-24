@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import UTC
 
+from collections.abc import AsyncGenerator
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +18,7 @@ from app.schemas.incident import IncidentListResponse, IncidentRead
 router = APIRouter(prefix="/incidents", tags=["incidents"])
 
 
-async def get_session() -> AsyncSession:  # type: ignore[return]
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with DatabaseManager.get_session_factory()() as session:
         yield session
 
