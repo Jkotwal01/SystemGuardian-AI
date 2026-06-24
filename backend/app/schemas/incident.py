@@ -24,3 +24,8 @@ class IncidentRead(IncidentBase):
     resolution_notes: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class IncidentListResponse(BaseModel):
+    items: list[IncidentRead]
+    total: int

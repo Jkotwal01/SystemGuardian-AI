@@ -1,1 +1,11 @@
-# engines package — health score, security, prediction engines (Phase 3+)
+"""Engines package — exports public API."""
+
+from app.engines.health_score import HealthScoreEngine, ScoreFactors
+from app.engines.security import SecurityEngine, ThreatDetected
+
+__all__ = [
+    "HealthScoreEngine",
+    "ScoreFactors",
+    "SecurityEngine",
+    "ThreatDetected",
+]

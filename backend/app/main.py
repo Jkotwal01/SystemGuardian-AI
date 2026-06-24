@@ -2,8 +2,9 @@
 SystemGuardian AI — FastAPI Application Entry Point
 
 Lifecycle:
-    startup  → DatabaseManager.initialize → run migrations → start orchestrator
-    shutdown → stop orchestrator → close DB connections
+    startup  → DatabaseManager.initialize → run migrations → init orchestrator
+             → create pipeline → init engines → start scheduler → mount API
+    shutdown → stop scheduler → close DB connections
 """
 
 from __future__ import annotations
@@ -15,14 +16,21 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1 import v1_router
 from app.collectors.orchestrator import CollectorOrchestrator
 from app.config import get_settings
 from app.core.database import DatabaseManager
+from app.core.event_bus import event_bus
+from app.core.scheduler import MonitoringScheduler
+from app.engines.health_score import HealthScoreEngine
+from app.engines.security import SecurityEngine
+from app.processors.pipeline import create_default_pipeline
 
 logger = structlog.get_logger()
 
-# Module-level orchestrator instance (initialized in lifespan)
+# Module-level singletons (initialized in lifespan)
 _orchestrator: CollectorOrchestrator | None = None
+_scheduler: MonitoringScheduler | None = None
 
 
 def get_orchestrator() -> CollectorOrchestrator:
@@ -35,30 +43,47 @@ def get_orchestrator() -> CollectorOrchestrator:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan handler — startup and shutdown logic."""
-    global _orchestrator  # noqa: PLW0603
+    global _orchestrator, _scheduler  # noqa: PLW0603
 
     settings = get_settings()
     logger.info("system_guardian_starting", version="0.1.0")
 
-    # Phase 1: Initialize database and run migrations
+    # ── Phase 1: Database ─────────────────────────────────────────────────────
     await DatabaseManager.initialize(settings.db_path)
     logger.info("database_initialized", db_path=str(settings.db_path))
 
-    # Phase 2: Initialize collector orchestrator
+    # ── Phase 2: Collector Orchestrator ───────────────────────────────────────
     session_factory = DatabaseManager.get_session_factory()
     _orchestrator = CollectorOrchestrator(settings, session_factory)
     await _orchestrator.initialize()
     logger.info("orchestrator_initialized", collectors=_orchestrator.collector_count)
 
-    # Phase 3: scheduler (implemented in Phase 3)
-    # scheduler.start()
+    # ── Phase 3: Processing Pipeline + Engines + Scheduler ────────────────────
+    pipeline = create_default_pipeline(event_bus)
+
+    health_engine = HealthScoreEngine()
+
+    # Security engine auto-subscribes to EVENT_PROCESSED on the bus
+    _security_engine = SecurityEngine(event_bus, session_factory)  # noqa: F841
+
+    _scheduler = MonitoringScheduler(
+        settings=settings,
+        orchestrator=_orchestrator,
+        pipeline=pipeline,
+        health_engine=health_engine,
+        event_bus=event_bus,
+        session_factory=session_factory,
+    )
+    _scheduler.start()
+    logger.info("scheduler_started", jobs=_scheduler.get_job_ids())
 
     logger.info("system_guardian_ready")
     yield
 
-    # ── Shutdown ─────────────────────────────────────────────────────────────
+    # ── Shutdown ──────────────────────────────────────────────────────────────
     logger.info("system_guardian_stopping")
-    # scheduler.shutdown()
+    if _scheduler is not None:
+        _scheduler.shutdown()
     await DatabaseManager.close()
     logger.info("system_guardian_stopped")
 
@@ -68,7 +93,7 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="SystemGuardian AI",
         description="AI-powered OS intelligence platform — local API",
-        version="0.1.0",
+        version="0.3.0",
         docs_url="/docs",
         redoc_url="/redoc",
         lifespan=lifespan,
@@ -87,7 +112,7 @@ def create_app() -> FastAPI:
 
     @application.get("/health", tags=["system"])
     async def health() -> dict[str, str]:
-        return {"status": "ok", "version": "0.1.0"}
+        return {"status": "ok", "version": "0.3.0"}
 
     @application.get("/health/collectors", tags=["system"])
     async def collector_health() -> dict[str, object]:
@@ -100,9 +125,8 @@ def create_app() -> FastAPI:
             "collectors": checks,
         }
 
-    # API routers registered here as each phase adds them
-    # from app.api.v1 import events_router
-    # application.include_router(events_router, prefix="/api/v1")
+    # ── API v1 routers ────────────────────────────────────────────────────────
+    application.include_router(v1_router)
 
     return application
 

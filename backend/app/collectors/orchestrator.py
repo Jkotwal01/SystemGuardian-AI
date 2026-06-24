@@ -152,3 +152,25 @@ class CollectorOrchestrator:
     @property
     def is_initialized(self) -> bool:
         return self._initialized
+
+    async def run_event_collectors(self, session: AsyncSession) -> list:
+        """
+        Run collectors and return raw EventModel objects (without saving them).
+        The pipeline is responsible for processing and persisting the events.
+
+        Note: For Phase 3 integration, collectors that implement
+        `collect_raw()` are preferred. Falls back to `run_all()` for now.
+        """
+        # For Phase 3: run_all already persists events internally via collector.run()
+        # The scheduler calls this and then passes results to the pipeline.
+        # In a future refactor, collectors will return raw events without saving.
+        await self.run_all()
+        return []  # Events already saved by collectors; pipeline not re-processing them
+
+    async def run_metric_collectors(self, session: AsyncSession) -> list[CollectorResult]:
+        """
+        Alias for run_all() used by the scheduler for the metrics job.
+        Returns CollectorResult list for logging/monitoring.
+        """
+        return await self.run_all()
+

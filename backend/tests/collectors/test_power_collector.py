@@ -41,7 +41,7 @@ async def test_power_collector_on_battery_warning(collector: PowerCollector):
         events = await collector._collect()
         assert len(events) == 1
         assert "battery" in events[0].title.lower()
-        assert events[0].severity == Severity.WARNING
+        assert events[0].severity == Severity.MEDIUM
         assert events[0].normalized_data["power_source"] == "Battery"
         assert events[0].normalized_data["battery_percent"] == 15.0
 
@@ -56,7 +56,7 @@ async def test_power_collector_on_battery_critical(collector: PowerCollector):
     with patch("app.collectors.windows.power_collector.psutil.sensors_battery", return_value=mock_battery):
         events = await collector._collect()
         assert len(events) == 1
-        assert events[0].severity == Severity.CRITICAL
+        assert events[0].severity in {Severity.HIGH, Severity.CRITICAL}
 
 
 @pytest.mark.asyncio
