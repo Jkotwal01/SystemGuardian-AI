@@ -144,8 +144,9 @@ def test_app_main_importable() -> None:
 
 def test_health_endpoint_returns_ok() -> None:
     """GET /health must return 200 {"status": "ok"}."""
-    from fastapi.testclient import TestClient
     from unittest.mock import AsyncMock, patch
+
+    from fastapi.testclient import TestClient
 
     from app.main import app
 

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import asyncio
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import structlog
 
@@ -143,7 +143,7 @@ class FrequencyEscalationStrategy(SeverityStrategy):
         self._recent_events: list[EventModel] = recent_events or []
 
     async def classify(self, event: EventModel) -> Severity:
-        cutoff = datetime.now(tz=timezone.utc) - timedelta(minutes=self.WINDOW_MINUTES)
+        cutoff = datetime.now(tz=UTC) - timedelta(minutes=self.WINDOW_MINUTES)
 
         # Count events with same source_id within the window
         count = sum(
@@ -152,7 +152,7 @@ class FrequencyEscalationStrategy(SeverityStrategy):
             if (
                 e.source_id == event.source_id
                 and e.source_id is not None
-                and e.occurred_at.replace(tzinfo=timezone.utc) >= cutoff
+                and e.occurred_at.replace(tzinfo=UTC) >= cutoff
             )
         )
 

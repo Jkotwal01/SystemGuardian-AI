@@ -17,16 +17,26 @@ def collector():
 async def test_network_collector_collects_metrics(collector: NetworkCollector):
     mock_counters = {
         "Ethernet": MagicMock(
-            bytes_sent=1000, bytes_recv=2000, packets_sent=10, packets_recv=20, errin=0, errout=0, dropin=0, dropout=0
+            bytes_sent=1000,
+            bytes_recv=2000,
+            packets_sent=10,
+            packets_recv=20,
+            errin=0,
+            errout=0,
+            dropin=0,
+            dropout=0,
         )
     }
     mock_stats = {
         "Ethernet": MagicMock(isup=True, speed=1000, duplex=2, mtu=1500)
     }
 
+    net_io_patch = "app.collectors.windows.network_collector.psutil.net_io_counters"
+    net_if_patch = "app.collectors.windows.network_collector.psutil.net_if_stats"
+
     with (
-        patch("app.collectors.windows.network_collector.psutil.net_io_counters", return_value=mock_counters),
-        patch("app.collectors.windows.network_collector.psutil.net_if_stats", return_value=mock_stats),
+        patch(net_io_patch, return_value=mock_counters),
+        patch(net_if_patch, return_value=mock_stats),
     ):
         events = await collector._collect()
         assert len(events) == 1
@@ -35,11 +45,13 @@ async def test_network_collector_collects_metrics(collector: NetworkCollector):
 
 @pytest.mark.asyncio
 async def test_network_collector_health_check_success(collector: NetworkCollector):
-    with patch("app.collectors.windows.network_collector.psutil.net_io_counters", return_value={}):
+    net_io_patch = "app.collectors.windows.network_collector.psutil.net_io_counters"
+    with patch(net_io_patch, return_value={}):
         assert await collector.health_check() is True
 
 
 @pytest.mark.asyncio
 async def test_network_collector_health_check_failure(collector: NetworkCollector):
-    with patch("app.collectors.windows.network_collector.psutil.net_io_counters", side_effect=Exception("Failed")):
+    net_io_patch = "app.collectors.windows.network_collector.psutil.net_io_counters"
+    with patch(net_io_patch, side_effect=Exception("Failed")):
         assert await collector.health_check() is False

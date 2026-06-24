@@ -9,19 +9,18 @@ Phase 3 Pipeline Tests — covers:
 
 from __future__ import annotations
 
-import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from app.core.event_bus import EventBus
 from app.domain.enums import EventCategory, IncidentStatus, Severity
 from app.engines.health_score import HealthScoreEngine, ScoreFactors
 from app.models.event import EventModel, uuid4_hex
 from app.models.incident import IncidentModel
 from app.processors.correlator import (
     EventCorrelator,
-    SameCategoryHighSeverityRule,
     SameSourceIdRule,
     SameUserRule,
 )
@@ -34,8 +33,6 @@ from app.processors.severity import (
     WindowsEventIdSeverityStrategy,
     escalate_severity,
 )
-from app.core.event_bus import EventBus
-
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -48,7 +45,7 @@ def make_event(
     minutes_ago: int = 0,
 ) -> EventModel:
     """Factory for test EventModel instances."""
-    occurred = datetime.now(tz=timezone.utc) - timedelta(minutes=minutes_ago)
+    occurred = datetime.now(tz=UTC) - timedelta(minutes=minutes_ago)
     # Strip tz for DB-compatible datetime (SQLAlchemy stores naive UTC)
     occurred_naive = occurred.replace(tzinfo=None)
     return EventModel(
@@ -314,7 +311,8 @@ class TestHealthScoreEngine:
     def test_security_score_never_negative(self) -> None:
         engine = self._engine()
         # Enough events to drive all three deduction caps simultaneously:
-        # -45 (critical cap) + -25 (high cap) + -20 (failed login cap) + -15 (total cap) = -105 → clamped to 0
+        # -45 (crit cap) + -25 (high cap) + -20 (login cap) + -15 (total cap)
+        # = -105 → clamped to 0
         factors = ScoreFactors(
             critical_events_24h=3,     # 3*15 = 45 (max cap)
             high_events_24h=4,         # 4*8  = 32 → capped at 25
@@ -479,12 +477,12 @@ class TestEventBus:
         mock_incident_repo = AsyncMock()
         mock_incident_repo.save = AsyncMock()
 
+        # Patch repository instantiation
+        import app.processors.pipeline as pipeline_module
         from app.processors.correlator import EventCorrelator
         from app.processors.enricher import EventEnricher
         from app.processors.severity import CompositeSeverityClassifier
 
-        # Patch repository instantiation
-        import app.processors.pipeline as pipeline_module
         original_event_repo = pipeline_module.EventRepository
         original_incident_repo = pipeline_module.IncidentRepository
 

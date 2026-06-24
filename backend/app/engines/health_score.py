@@ -16,8 +16,8 @@ Observer: subscribes to Events.EVENT_PROCESSED on the EventBus.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -138,8 +138,7 @@ class HealthScoreEngine:
     async def _gather_factors(self, session: AsyncSession) -> ScoreFactors:
         """Pull all required metrics from the DB in parallel-ish queries."""
         repo = EventRepository(session)
-        now = datetime.now(tz=timezone.utc)
-        cutoff_24h = now - timedelta(hours=24)
+        now = datetime.now(tz=UTC)
         cutoff_1h = now - timedelta(hours=1)
 
         severity_counts = await repo.count_by_severity_today()

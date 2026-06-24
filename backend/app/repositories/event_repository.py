@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import desc, func, select
 
@@ -31,11 +31,11 @@ class EventRepository(BaseRepository[EventModel]):
 
     async def get_since_minutes(self, minutes: int = 15) -> list[EventModel]:
         """Return all events from the last `minutes` minutes. Used for correlation."""
-        cutoff = datetime.now(tz=timezone.utc) - timedelta(minutes=minutes)
+        cutoff = datetime.now(tz=UTC) - timedelta(minutes=minutes)
         return await self.get_since(cutoff)
 
     async def get_by_category(self, category: EventCategory, hours: int = 24) -> list[EventModel]:
-        cutoff = datetime.now(tz=timezone.utc) - timedelta(hours=hours)
+        cutoff = datetime.now(tz=UTC) - timedelta(hours=hours)
         stmt = (
             select(self.model)
             .where(self.model.category == category)
@@ -58,7 +58,7 @@ class EventRepository(BaseRepository[EventModel]):
 
     async def count_by_severity_today(self) -> dict[Severity, int]:
         """Count events per severity for the past 24 hours."""
-        cutoff = datetime.now(tz=timezone.utc) - timedelta(hours=24)
+        cutoff = datetime.now(tz=UTC) - timedelta(hours=24)
         stmt = (
             select(self.model.severity, func.count().label("cnt"))
             .where(self.model.occurred_at >= cutoff)
@@ -69,7 +69,7 @@ class EventRepository(BaseRepository[EventModel]):
 
     async def count_by_category_today(self) -> dict[EventCategory, int]:
         """Count events per category for the past 24 hours."""
-        cutoff = datetime.now(tz=timezone.utc) - timedelta(hours=24)
+        cutoff = datetime.now(tz=UTC) - timedelta(hours=24)
         stmt = (
             select(self.model.category, func.count().label("cnt"))
             .where(self.model.occurred_at >= cutoff)

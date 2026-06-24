@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -67,8 +69,8 @@ async def update_incident(
         incident.resolution_notes = body.resolution_notes
 
     if body.status in {IncidentStatus.RESOLVED, IncidentStatus.DISMISSED}:
-        from datetime import datetime, timezone
-        incident.resolved_at = datetime.now(tz=timezone.utc)
+        from datetime import datetime
+        incident.resolved_at = datetime.now(tz=UTC)
 
     await repo.save(incident)
     return IncidentRead.model_validate(incident)

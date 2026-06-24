@@ -21,7 +21,9 @@ async def test_power_collector_on_ac_no_battery(collector: PowerCollector):
     mock_battery.power_plugged = True
     mock_battery.secsleft = -1
 
-    with patch("app.collectors.windows.power_collector.psutil.sensors_battery", return_value=mock_battery):
+    battery_patch = "app.collectors.windows.power_collector.psutil.sensors_battery"
+
+    with patch(battery_patch, return_value=mock_battery):
         events = await collector._collect()
         assert len(events) == 1
         assert events[0].title.startswith("Power")
@@ -37,7 +39,9 @@ async def test_power_collector_on_battery_warning(collector: PowerCollector):
     mock_battery.power_plugged = False
     mock_battery.secsleft = 1800  # 30 mins
 
-    with patch("app.collectors.windows.power_collector.psutil.sensors_battery", return_value=mock_battery):
+    battery_patch = "app.collectors.windows.power_collector.psutil.sensors_battery"
+
+    with patch(battery_patch, return_value=mock_battery):
         events = await collector._collect()
         assert len(events) == 1
         assert "battery" in events[0].title.lower()
@@ -53,7 +57,9 @@ async def test_power_collector_on_battery_critical(collector: PowerCollector):
     mock_battery.power_plugged = False
     mock_battery.secsleft = 300  # 5 mins
 
-    with patch("app.collectors.windows.power_collector.psutil.sensors_battery", return_value=mock_battery):
+    battery_patch = "app.collectors.windows.power_collector.psutil.sensors_battery"
+
+    with patch(battery_patch, return_value=mock_battery):
         events = await collector._collect()
         assert len(events) == 1
         assert events[0].severity in {Severity.HIGH, Severity.CRITICAL}

@@ -13,7 +13,7 @@ Minimum events to form an incident: 2
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from datetime import timedelta, timezone
+from datetime import UTC, timedelta
 from datetime import datetime as dt
 
 import structlog
@@ -153,11 +153,11 @@ class EventCorrelator:
 
         `recent_events` should cover at least the last WINDOW_MINUTES.
         """
-        cutoff = dt.now(tz=timezone.utc) - timedelta(minutes=self.WINDOW_MINUTES)
+        cutoff = dt.now(tz=UTC) - timedelta(minutes=self.WINDOW_MINUTES)
 
         candidates = [
             e for e in recent_events
-            if e.occurred_at.replace(tzinfo=timezone.utc) >= cutoff
+            if e.occurred_at.replace(tzinfo=UTC) >= cutoff
             and e.id != event.id
         ]
 

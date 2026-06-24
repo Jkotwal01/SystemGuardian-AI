@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import platform
 import socket
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import structlog
 
@@ -54,7 +54,7 @@ class EventEnricher:
             "os_version": self._os_version,
             "os_release": self._os_release,
             "machine_arch": self._machine,
-            "enriched_at": datetime.now(tz=timezone.utc).isoformat(),
+            "enriched_at": datetime.now(tz=UTC).isoformat(),
         }
 
         event.metadata_ = {**existing_meta, **enrichment}

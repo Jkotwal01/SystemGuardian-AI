@@ -15,12 +15,14 @@ Adding a new job = one async method + one scheduler.add_job() call.
 
 from __future__ import annotations
 
+from datetime import UTC
+
 import structlog
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from app.config import Settings
 from app.collectors.orchestrator import CollectorOrchestrator
+from app.config import Settings
 from app.core.event_bus import EventBus
 from app.engines.health_score import HealthScoreEngine
 from app.processors.pipeline import EventProcessingPipeline, Events
@@ -209,15 +211,17 @@ class MonitoringScheduler:
         Runs nightly at 3 AM UTC.
         """
         try:
-            from datetime import datetime, timedelta, timezone
+            from datetime import datetime, timedelta
+
             from sqlalchemy import delete
+
             from app.models.event import EventModel
             from app.models.health_score import HealthScoreModel
 
-            event_cutoff = datetime.now(tz=timezone.utc) - timedelta(
+            event_cutoff = datetime.now(tz=UTC) - timedelta(
                 days=self._settings.EVENT_RETENTION_DAYS
             )
-            metric_cutoff = datetime.now(tz=timezone.utc) - timedelta(
+            metric_cutoff = datetime.now(tz=UTC) - timedelta(
                 days=self._settings.METRIC_RETENTION_DAYS
             )
 

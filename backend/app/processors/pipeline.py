@@ -89,7 +89,6 @@ class EventProcessingPipeline:
 
         # Step 2: Classify severity (may escalate based on frequency)
         # Rebuild classifier with fresh recent context
-        from app.processors.severity import FrequencyEscalationStrategy
 
         classifier_with_context = CompositeSeverityClassifier(recent_events=recent_events)
         event.severity = await classifier_with_context.classify(event)
