@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import UTC
-
 from collections.abc import AsyncGenerator
+from datetime import UTC
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
