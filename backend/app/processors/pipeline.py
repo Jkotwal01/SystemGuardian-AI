@@ -7,14 +7,19 @@ Flow per event:
   3. Persist event
   4. Correlate → may produce an Incident
   5. Publish to EventBus → health engine + security engine react
+  6. [async, non-blocking] AI explanation for HIGH/CRITICAL events
 """
 
 from __future__ import annotations
+
+import asyncio
+from typing import TYPE_CHECKING
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.event_bus import EventBus
+from app.domain.enums import Severity
 from app.models.event import EventModel
 from app.models.incident import IncidentModel
 from app.processors.correlator import EventCorrelator
@@ -23,7 +28,12 @@ from app.processors.severity import CompositeSeverityClassifier
 from app.repositories.event_repository import EventRepository
 from app.repositories.incident_repository import IncidentRepository
 
+if TYPE_CHECKING:
+    from app.ai.explanation_engine import ExplanationEngine
+
 logger = structlog.get_logger()
+
+_AI_SEVERITIES = {Severity.HIGH, Severity.CRITICAL}
 
 
 # ── Event type constants ───────────────────────────────────────────────────────
@@ -57,11 +67,13 @@ class EventProcessingPipeline:
         enricher: EventEnricher,
         correlator: EventCorrelator,
         event_bus: EventBus,
+        explanation_engine: "ExplanationEngine | None" = None,
     ) -> None:
         self._classifier = classifier
         self._enricher = enricher
         self._correlator = correlator
         self._bus = event_bus
+        self._explanation_engine = explanation_engine
 
     async def process(
         self,
@@ -117,6 +129,14 @@ class EventProcessingPipeline:
         # Step 6: Notify all subscribers that a new event was processed
         await self._bus.publish(Events.EVENT_PROCESSED, event)
 
+        # Step 7: Fire AI explanation (non-blocking) for high-severity events
+        if self._explanation_engine and event.severity in _AI_SEVERITIES:
+            # Use create_task so AI latency never stalls the pipeline
+            asyncio.create_task(
+                self._explanation_engine.explain_event(event),
+                name=f"ai_explain_{event.id[:8]}",
+            )
+
         return event
 
     async def process_batch(
@@ -132,7 +152,10 @@ class EventProcessingPipeline:
         return processed
 
 
-def create_default_pipeline(event_bus: EventBus) -> EventProcessingPipeline:
+def create_default_pipeline(
+    event_bus: EventBus,
+    explanation_engine: "ExplanationEngine | None" = None,
+) -> EventProcessingPipeline:
     """
     Factory function. Creates the production pipeline with default components.
     Used in main.py lifespan and scheduler.
@@ -142,4 +165,5 @@ def create_default_pipeline(event_bus: EventBus) -> EventProcessingPipeline:
         enricher=EventEnricher(),
         correlator=EventCorrelator(),
         event_bus=event_bus,
+        explanation_engine=explanation_engine,
     )

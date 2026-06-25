@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import AsyncIterator
+from typing import AsyncGenerator
 
 
 @dataclass
@@ -62,9 +62,11 @@ class BaseAIProvider(ABC):
         system_prompt: str,
         user_message: str,
         options: GenerateOptions | None = None,
-    ) -> AsyncIterator[str]:
+    ) -> AsyncGenerator[str, None]:
         """Yield response chunks as they arrive."""
-        ...
+        # async generators cannot use `...` — they need a real body
+        return
+        yield  # makes this an async generator for subclass compatibility
 
     @abstractmethod
     async def is_available(self) -> bool:

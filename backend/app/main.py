@@ -22,6 +22,10 @@ from app.api.v1.events import router as events_router
 from app.api.v1.health_score import router as health_router
 from app.api.v1.incidents import router as incidents_router
 from app.api.websocket import setup_websocket_bridge, ws_router
+from app.ai.explanation_engine import ExplanationEngine
+from app.ai.fallback_provider import FallbackAIProvider
+from app.ai.providers.gemini import GeminiProvider
+from app.ai.providers.ollama import OllamaProvider
 from app.collectors.orchestrator import CollectorOrchestrator
 from app.config import get_settings
 from app.core.database import DatabaseManager
@@ -63,8 +67,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await _orchestrator.initialize()
     logger.info("orchestrator_initialized", collectors=_orchestrator.collector_count)
 
-    # ── Phase 3: Processing Pipeline + Engines + Scheduler ────────────────────
-    pipeline = create_default_pipeline(event_bus)
+    # ── Phase 3: Processing Pipeline + Engines + Scheduler ─────────────────────
+    # ── Phase 6: AI Integration Layer ────────────────────────────────
+    ai_provider = FallbackAIProvider([
+        OllamaProvider(),
+        GeminiProvider(),
+    ])
+    explanation_engine = ExplanationEngine(ai_provider, session_factory)
+    logger.info("ai_provider_initialized", providers=["ollama", "gemini"])
+
+    pipeline = create_default_pipeline(event_bus, explanation_engine=explanation_engine)
 
     health_engine = HealthScoreEngine()
 

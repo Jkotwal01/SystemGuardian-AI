@@ -10,6 +10,16 @@ from app.models.event import EventModel
 class EventRepository(BaseRepository[EventModel]):
     model = EventModel
 
+    async def get_by_id(self, id: str) -> EventModel | None:
+        from sqlalchemy.orm import selectinload
+        stmt = (
+            select(self.model)
+            .options(selectinload(self.model.ai_insight))
+            .where(self.model.id == id)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalars().first()
+
     async def get_by_severity(self, severity: Severity, limit: int = 50) -> list[EventModel]:
         from sqlalchemy.orm import selectinload
         stmt = (
