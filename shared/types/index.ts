@@ -1,10 +1,10 @@
-"""
-Shared TypeScript types for SystemGuardian AI.
-These types are auto-generated from Pydantic schemas in the backend.
+//
+// Shared TypeScript types for SystemGuardian AI.
+// These types are auto-generated from Pydantic schemas in the backend.
 
-Until the code-generation pipeline is set up (Phase 4),
-this file is maintained manually.
-"""
+// Until the code-generation pipeline is set up (Phase 4),
+// this file is maintained manually.
+//
 
 export type Severity = "critical" | "high" | "medium" | "low" | "info";
 

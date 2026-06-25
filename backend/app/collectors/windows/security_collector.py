@@ -61,13 +61,49 @@ class SecurityCollector(BaseCollector, EventNormalizerMixin):
         1102: ("Audit Log Cleared", Severity.CRITICAL),
     }
 
+    # Track whether we've already warned about missing privileges so we
+    # don't flood the log on every scheduler tick.
+    _privilege_warned: bool = False
+
     async def _collect(self) -> list[EventModel]:
         if sys.platform != "win32":
             logger.debug("security_collector_skip_non_windows")
             return []
 
+        # ── Privilege pre-check ───────────────────────────────────────────────
+        # win32evtlog.OpenEventLog raises pywintypes.error(1314, …) when the
+        # process lacks SeSecurityPrivilege / admin rights. We detect this up
+        # front so we can emit one clean message instead of a raw traceback.
+        if not self._has_security_log_access():
+            if not SecurityCollector._privilege_warned:
+                SecurityCollector._privilege_warned = True
+                self._logger.warning(
+                    "security_collector_no_privilege",
+                    hint=(
+                        "Run SystemGuardian as Administrator to enable "
+                        "Windows Security Event Log collection."
+                    ),
+                )
+            return []
+
         events: list[EventModel] = []
-        hand = win32evtlog.OpenEventLog(None, "Security")
+        try:
+            hand = win32evtlog.OpenEventLog(None, "Security")
+        except Exception as exc:  # noqa: BLE001
+            # Catch any residual open error (e.g. race after privilege check)
+            err_code = getattr(exc, "winerror", None) or getattr(exc, "args", [None])[0]
+            if err_code == 1314:  # ERROR_PRIVILEGE_NOT_HELD
+                if not SecurityCollector._privilege_warned:
+                    SecurityCollector._privilege_warned = True
+                    self._logger.warning(
+                        "security_collector_no_privilege",
+                        hint=(
+                            "Run SystemGuardian as Administrator to enable "
+                            "Windows Security Event Log collection."
+                        ),
+                    )
+                return []
+            raise  # Re-raise unexpected errors so base class can log them
 
         try:
             flags = win32evtlog.EVENTLOG_BACKWARDS_READ | win32evtlog.EVENTLOG_SEQUENTIAL_READ
@@ -103,14 +139,26 @@ class SecurityCollector(BaseCollector, EventNormalizerMixin):
     async def health_check(self) -> bool:
         if sys.platform != "win32":
             return False
+        return self._has_security_log_access()
+
+    # ── Private helpers ──────────────────────────────────────────────────────
+
+    def _has_security_log_access(self) -> bool:
+        """Return True if this process can open the Windows Security Event Log.
+
+        Does a cheap probe open/close — much lighter than a full privilege
+        token inspection and works without ctypes or extra imports.
+        """
         try:
             hand = win32evtlog.OpenEventLog(None, "Security")
             win32evtlog.CloseEventLog(hand)
             return True
-        except Exception:  # noqa: BLE001
-            return False
-
-    # ── Private helpers ──────────────────────────────────────────────────────
+        except Exception as exc:  # noqa: BLE001
+            err_code = getattr(exc, "winerror", None) or getattr(exc, "args", [None])[0]
+            if err_code == 1314:  # ERROR_PRIVILEGE_NOT_HELD
+                return False
+            # Unexpected error — let it surface as True so _collect() raises it
+            return True
 
     def _win32_event_to_dict(self, ev: Any) -> dict[str, Any]:  # noqa: ANN401
         """Convert a win32evtlog record to a JSON-serialisable dict."""
