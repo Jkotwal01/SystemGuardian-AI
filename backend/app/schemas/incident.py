@@ -4,6 +4,8 @@ from pydantic import BaseModel, ConfigDict
 
 from app.domain.enums import IncidentStatus, Severity
 
+from app.schemas.event import EventRead
+
 
 class IncidentBase(BaseModel):
     title: str
@@ -22,6 +24,7 @@ class IncidentRead(IncidentBase):
     updated_at: datetime
     resolved_at: datetime | None = None
     resolution_notes: str | None = None
+    events: list[EventRead] = []
 
     model_config = ConfigDict(from_attributes=True)
 

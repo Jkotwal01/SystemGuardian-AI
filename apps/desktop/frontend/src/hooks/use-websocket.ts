@@ -1,13 +1,15 @@
 import { useEffect, useRef } from "react";
 import { useHealthStore } from "../stores/health-store";
 import { useEventStore } from "../stores/event-store";
-import { HealthScoreRead, EventRead } from "../lib/types";
+import { useIncidentStore } from "../stores/incident-store";
+import { HealthScoreRead, EventRead, IncidentRead } from "../lib/types";
 
 const WS_BASE = "ws://127.0.0.1:8765/ws";
 
 export function useWebSockets() {
   const updateHealth = useHealthStore((s) => s.updateFromWebSocket);
   const updateEvent = useEventStore((s) => s.updateFromWebSocket);
+  const addOrUpdateIncident = useIncidentStore((s) => s.addOrUpdateIncident);
   
   const metricsWsRef = useRef<WebSocket | null>(null);
   const eventsWsRef = useRef<WebSocket | null>(null);
@@ -48,6 +50,8 @@ export function useWebSockets() {
           const msg = JSON.parse(e.data);
           if (msg.type === "event") {
             updateEvent(msg.data as EventRead);
+          } else if (msg.type === "incident_created" || msg.type === "incident_updated") {
+            addOrUpdateIncident(msg.data as IncidentRead);
           }
         } catch (err) {
           console.error("Events WS parse error", err);
