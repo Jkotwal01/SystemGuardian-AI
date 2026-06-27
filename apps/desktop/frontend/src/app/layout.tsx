@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   keywords: ["system monitor", "AI", "OS health", "performance", "security"],
 };
 
+import { SplashWrapper } from "@/components/layout/SplashWrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,7 +36,9 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col antialiased" suppressHydrationWarning>
-        {children}
+        <SplashWrapper>
+          {children}
+        </SplashWrapper>
       </body>
     </html>
   );
