@@ -44,19 +44,19 @@ export default function HardwarePage() {
   );
 
   return (
-    <div className="flex flex-col h-full gap-6 p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
+    <div className="flex flex-col h-full gap-4 md:gap-6 p-4 md:p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
       <div className="flex items-center gap-4 mb-1 pl-1">
         <div className="p-2.5 bg-[var(--color-surface-900)] rounded-lg text-[var(--color-text-primary)] border border-[var(--color-surface-700)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-          <Server className="w-6 h-6 opacity-80" />
+          <Server className="w-5 h-5 md:w-6 md:h-6 opacity-80" />
         </div>
         <div>
-          <h2 className="text-xl font-medium tracking-tight text-[var(--color-text-primary)]">Hardware Telemetry</h2>
-          <p className="text-[13px] text-[var(--color-text-secondary)] mt-0.5">Physical system components and driver health</p>
+          <h2 className="text-lg md:text-xl font-medium tracking-tight text-[var(--color-text-primary)]">Hardware Telemetry</h2>
+          <p className="text-[12px] md:text-[13px] text-[var(--color-text-secondary)] mt-0.5">Physical system components and driver health</p>
         </div>
       </div>
 
       {/* Top Section: Component Status Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <ComponentStatus name="Storage Arrays" icon={HardDrive} isHealthy={isDiskHealthy} />
         <ComponentStatus name="Memory Banks" icon={Database} isHealthy={isServerHealthy} />
         <ComponentStatus name="I/O & USB" icon={Usb} isHealthy={isUsbHealthy} />

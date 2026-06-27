@@ -38,12 +38,12 @@ export default function PerformancePage() {
   const performanceEvents = recentEvents.filter((e) => e.category === "performance");
 
   return (
-    <div className="flex flex-col h-full gap-6 p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
+    <div className="flex flex-col h-full gap-4 md:gap-6 p-4 md:p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
       {/* Top Section: Metrics Overview */}
       <div className="flex flex-col gap-3">
         <h2 className="text-[11px] font-medium tracking-widest uppercase text-[var(--color-text-secondary)] pl-1">Metrics Overview</h2>
-        <div className="grid grid-cols-3 gap-6">
-          <div className="glass-card p-6 rounded-lg border border-[var(--color-surface-700)] bg-[var(--color-surface-900)]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="glass-card p-4 md:p-6 rounded-lg border border-[var(--color-surface-700)] bg-[var(--color-surface-900)]">
             <MetricBar 
               label="CPU Health" 
               icon={Cpu} 

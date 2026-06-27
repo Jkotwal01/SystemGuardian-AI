@@ -45,29 +45,29 @@ export default function SecurityPage() {
   }
 
   return (
-    <div className="flex flex-col h-full gap-6 p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
+    <div className="flex flex-col h-full gap-4 md:gap-6 p-4 md:p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
       {/* Top Bar: Security Score */}
-      <div className={`flex items-center justify-between p-6 rounded-lg border ${scoreBgClass}`}>
-        <div className="flex items-center gap-5">
+      <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-6 rounded-lg border gap-4 ${scoreBgClass}`}>
+        <div className="flex items-center gap-4 md:gap-5">
           <div className={`p-3 rounded-md bg-[var(--color-surface-900)] border border-[var(--color-surface-800)] shadow-sm ${scoreColorClass}`}>
             <ScoreIcon className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-medium tracking-tight text-[var(--color-text-primary)]">Security Posture</h2>
-            <p className="text-[13px] text-[var(--color-text-secondary)] mt-0.5">Live threat detection and system integrity</p>
+            <h2 className="text-lg md:text-xl font-medium tracking-tight text-[var(--color-text-primary)]">Security Posture</h2>
+            <p className="text-[12px] md:text-[13px] text-[var(--color-text-secondary)] mt-0.5">Live threat detection and system integrity</p>
           </div>
         </div>
-        <div className="text-right">
-          <div className={`text-4xl font-semibold tracking-tight ${scoreColorClass}`}>
-            {securityScore}<span className="text-xl opacity-50 ml-1">%</span>
+        <div className="text-left sm:text-right w-full sm:w-auto pl-14 sm:pl-0">
+          <div className={`text-3xl md:text-4xl font-semibold tracking-tight ${scoreColorClass}`}>
+            {securityScore}<span className="text-lg md:text-xl opacity-50 ml-1">%</span>
           </div>
-          <p className="text-[11px] uppercase tracking-widest text-[var(--color-text-muted)] mt-1 font-medium">Integrity Score</p>
+          <p className="text-[10px] md:text-[11px] uppercase tracking-widest text-[var(--color-text-muted)] mt-1 font-medium">Integrity Score</p>
         </div>
       </div>
 
-      <div className="flex gap-6 h-full min-h-0">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full lg:min-h-0">
         {/* Left Column: Active Threats (Incidents) */}
-        <div className="w-1/2 flex flex-col gap-3">
+        <div className="w-full lg:w-1/2 flex flex-col gap-3 min-h-[300px]">
           <div className="flex items-center justify-between pl-1 pr-2">
              <h3 className="text-[11px] font-medium tracking-widest uppercase text-[var(--color-text-secondary)] flex items-center gap-2">
                <Activity className="w-3.5 h-3.5 opacity-60 text-[var(--color-severity-high)]" /> Active Threats

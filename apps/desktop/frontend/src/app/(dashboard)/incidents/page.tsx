@@ -52,9 +52,9 @@ export default function IncidentsPage() {
   const selectedIncident = incidents.find(i => i.id === selectedIncidentId);
 
   return (
-    <div className="flex h-full gap-6 p-6 animate-fade-in bg-[var(--color-surface-950)]">
+    <div className="flex flex-col lg:flex-row h-full gap-4 lg:gap-6 p-4 lg:p-6 animate-fade-in bg-[var(--color-surface-950)] overflow-y-auto lg:overflow-hidden">
       {/* Left Column: Incident List */}
-      <div className="w-1/3 flex flex-col gap-4">
+      <div className="w-full lg:w-1/3 flex flex-col gap-4 lg:h-full min-h-[300px]">
         <h2 className="text-[11px] font-medium tracking-widest uppercase text-[var(--color-text-secondary)] pl-1">Active Incidents</h2>
         <div className="flex-1 glass-card overflow-hidden flex flex-col">
           {loading && incidents.length === 0 ? (
@@ -66,7 +66,7 @@ export default function IncidentsPage() {
                <p className="text-[11px] opacity-70">Your system is healthy.</p>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5">
+            <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5 max-h-[40vh] lg:max-h-full">
               {incidents.map((incident) => (
                 <button
                   key={incident.id}
@@ -94,7 +94,7 @@ export default function IncidentsPage() {
       </div>
 
       {/* Right Column: Incident Details */}
-      <div className="w-2/3 flex flex-col gap-4 h-full">
+      <div className="w-full lg:w-2/3 flex flex-col gap-4 lg:h-full min-h-[500px]">
          <h2 className="text-[11px] font-medium tracking-widest uppercase text-[var(--color-text-secondary)] pl-1">Details</h2>
          <div className="flex-1 glass-card overflow-hidden flex flex-col relative bg-[var(--color-surface-900)]">
            {selectedIncident ? (

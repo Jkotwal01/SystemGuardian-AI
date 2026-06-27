@@ -22,8 +22,8 @@ export default function OverviewPage() {
   }, [fetchHealth, fetchEvents]);
 
   return (
-    <div className="p-6 flex flex-col gap-6 h-full max-h-full overflow-hidden">
-      <div className="grid grid-cols-[300px_1fr] gap-6">
+    <div className="p-4 md:p-6 flex flex-col gap-4 md:gap-6 h-full max-h-full overflow-hidden">
+      <div className="grid grid-cols-1 xl:grid-cols-[300px_1fr] gap-4 md:gap-6">
         {/* Main Health Score */}
         <div className="glass-card p-6 flex flex-col items-center justify-center animate-fade-in gap-4">
           <h2 className="text-sm font-semibold tracking-wide uppercase opacity-70">

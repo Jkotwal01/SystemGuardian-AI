@@ -3,10 +3,13 @@
 import { usePathname } from "next/navigation";
 import { WindowControls } from "./WindowControls";
 import { useBackendStatus } from "@/hooks/useBackendStatus";
+import { Menu } from "lucide-react";
+import { useUIStore } from "@/stores/ui-store";
 
 export function TopBar() {
   const pathname = usePathname();
   const status = useBackendStatus();
+  const toggleMobileSidebar = useUIStore((s) => s.toggleMobileSidebar);
   
   // Create a nice title from the pathname (e.g. /ai-assistant -> AI Assistant)
   const title = pathname === "/" || pathname === "" 
@@ -16,9 +19,16 @@ export function TopBar() {
   return (
     <header
       data-tauri-drag-region
-      className="h-12 flex items-center justify-between pl-6 border-b border-[var(--color-surface-700)] flex-shrink-0 select-none bg-transparent"
+      className="h-12 flex items-center justify-between pl-4 md:pl-6 border-b border-[var(--color-surface-700)] flex-shrink-0 select-none bg-transparent"
     >
-      <div className="flex items-center gap-4 pointer-events-none">
+      <div className="flex items-center gap-3 md:gap-4 pointer-events-none">
+        <button 
+          onClick={toggleMobileSidebar}
+          className="p-1.5 md:hidden pointer-events-auto rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-700)] transition-colors"
+        >
+          <Menu size={18} />
+        </button>
+        
         <h1
           className="font-medium tracking-tight"
           style={{
