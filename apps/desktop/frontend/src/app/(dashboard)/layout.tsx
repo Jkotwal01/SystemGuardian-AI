@@ -9,12 +9,12 @@ export default function DashboardLayout({
   return (
     <div
       className="flex flex-1 h-full"
-      style={{ background: "var(--color-surface-900)" }}
+      style={{ background: "var(--color-surface-950)" }}
     >
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden m-2 bg-[var(--color-surface-900)] rounded-xl border border-[var(--color-surface-700)] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]">
         <TopBar />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto relative">{children}</main>
       </div>
     </div>
   );

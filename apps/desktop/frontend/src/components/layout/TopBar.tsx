@@ -16,18 +16,14 @@ export function TopBar() {
   return (
     <header
       data-tauri-drag-region
-      className="h-12 flex items-center justify-between pl-6 border-b flex-shrink-0 select-none"
-      style={{
-        background: "var(--color-surface-800)",
-        borderColor: "var(--color-surface-700)",
-      }}
+      className="h-12 flex items-center justify-between pl-6 border-b border-[var(--color-surface-700)] flex-shrink-0 select-none bg-transparent"
     >
       <div className="flex items-center gap-4 pointer-events-none">
         <h1
-          className="font-semibold"
+          className="font-medium tracking-tight"
           style={{
             color: "var(--color-text-primary)",
-            fontSize: "var(--text-base)",
+            fontSize: "15px",
           }}
         >
           {title}
@@ -36,38 +32,40 @@ export function TopBar() {
         <div className="flex items-center gap-2">
           {status === "online" && (
             <span
-              className="text-xs px-2 py-0.5 rounded-full"
+              className="text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
               style={{
-                background: "hsl(142 65% 42% / 0.15)",
-                color: "hsl(142 65% 55%)",
-                border: "1px solid hsl(142 65% 42% / 0.3)",
+                background: "var(--color-surface-700)",
+                color: "var(--color-status-healthy)",
+                border: "1px solid var(--color-surface-600)",
               }}
             >
-              Backend Connected
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-status-healthy)] shadow-[0_0_8px_var(--color-status-healthy)]" />
+              Connected
             </span>
           )}
           {status === "offline" && (
             <span
-              className="text-xs px-2 py-0.5 rounded-full"
+              className="text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
               style={{
-                background: "hsl(0 80% 55% / 0.15)",
-                color: "hsl(0 80% 65%)",
-                border: "1px solid hsl(0 80% 55% / 0.3)",
+                background: "var(--color-surface-700)",
+                color: "var(--color-text-secondary)",
+                border: "1px solid var(--color-surface-600)",
               }}
             >
-              Backend Offline
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-text-muted)]" />
+              Offline
             </span>
           )}
           {status === "connecting" && (
             <span
-              className="text-xs px-2 py-0.5 rounded-full flex items-center gap-2"
+              className="text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
               style={{
-                background: "hsl(45 95% 55% / 0.15)",
-                color: "hsl(45 95% 65%)",
-                border: "1px solid hsl(45 95% 55% / 0.3)",
+                background: "var(--color-surface-700)",
+                color: "var(--color-status-warning)",
+                border: "1px solid var(--color-surface-600)",
               }}
             >
-              <span className="w-2 h-2 rounded-full animate-pulse bg-[hsl(45_95%_65%)]" />
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-[var(--color-status-warning)]" />
               Connecting...
             </span>
           )}

@@ -8,6 +8,15 @@
   "permissions": [
     "core:default",
     "shell:allow-spawn",
-    "shell:allow-execute"
+    "shell:allow-execute",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-hide",
+    "core:window:allow-show",
+    "core:window:allow-start-dragging"
   ]
 }
