@@ -194,7 +194,7 @@ export function EventDetailModal({ eventId, onClose }: Props) {
                       )},
                       { label: "Category", value: <span className="capitalize">{event.category}</span> },
                       { label: "Source", value: event.source },
-                      { label: "Event ID", value: <span className="font-mono text-[13px] sm:text-[15px] break-all">{(event as any).source_id || "—"}</span> },
+                      { label: "Event ID", value: <span className="font-mono text-[13px] sm:text-[15px] break-all">{event.source_id || "—"}</span> },
                       { label: "Occurred", value: formatDate(event.occurred_at), span: true },
                     ].map((row, i) => (
                       <div

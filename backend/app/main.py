@@ -18,9 +18,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import v1_router
+from app.api.v1.ai_status import router as ai_status_router
 from app.api.v1.events import router as events_router
 from app.api.v1.health_score import router as health_router
 from app.api.v1.incidents import router as incidents_router
+from app.api.v1.metrics import router as metrics_router
+from app.api.v1.security import router as security_router
 from app.api.websocket import setup_websocket_bridge, ws_router
 from app.ai.explanation_engine import ExplanationEngine
 from app.ai.fallback_provider import FallbackAIProvider
@@ -149,6 +152,9 @@ def create_app() -> FastAPI:
     application.include_router(events_router, prefix="/api/v1")
     application.include_router(incidents_router, prefix="/api/v1")
     application.include_router(health_router, prefix="/api/v1")
+    application.include_router(metrics_router, prefix="/api/v1")
+    application.include_router(security_router, prefix="/api/v1")
+    application.include_router(ai_status_router, prefix="/api/v1")
     application.include_router(ws_router)
 
     return application

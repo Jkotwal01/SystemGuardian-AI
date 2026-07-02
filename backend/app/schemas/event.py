@@ -29,6 +29,7 @@ class EventCreate(EventBase):
 
 class EventRead(EventBase):
     id: str
+    source_id: str | None = None
     occurred_at: datetime
     collected_at: datetime
     incident_id: str | None = None

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import DatabaseManager
@@ -60,3 +61,25 @@ async def get_event(
     if event is None:
         raise HTTPException(status_code=404, detail=f"Event '{event_id}' not found")
     return EventRead.model_validate(event)
+
+
+class EventStatsResponse(BaseModel):
+    total_24h: int
+    by_category: dict[str, int]
+    by_severity: dict[str, int]
+
+
+@router.get("/stats/summary", response_model=EventStatsResponse)
+async def get_event_stats(
+    session: AsyncSession = Depends(get_session),
+) -> EventStatsResponse:
+    """Return event counts by category and severity for the last 24 hours."""
+    repo = EventRepository(session)
+    by_category = await repo.count_by_category_today()
+    by_severity = await repo.count_by_severity_today()
+    total = sum(by_severity.values())
+    return EventStatsResponse(
+        total_24h=total,
+        by_category={k.value: v for k, v in by_category.items()},
+        by_severity={k.value: v for k, v in by_severity.items()},
+    )

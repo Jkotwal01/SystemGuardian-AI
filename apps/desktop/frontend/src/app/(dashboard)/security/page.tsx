@@ -1,19 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useHealthStore } from "@/stores/health-store";
 import { useEventStore } from "@/stores/event-store";
 import { useIncidentStore } from "@/stores/incident-store";
-import { Shield, ShieldAlert, ShieldCheck, Activity, Zap, Search } from "lucide-react";
+import { Shield, ShieldAlert, ShieldCheck, Activity, Zap, Search, LogIn, LogOut, AlertTriangle } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { EventDetailModal } from "@/components/events/EventDetailModal";
+import { api } from "@/lib/api-client";
+import { SecurityStatsResponse } from "@/lib/types";
+
+function StatPill({
+  label,
+  value,
+  icon: Icon,
+  colorClass,
+  bgClass,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ElementType;
+  colorClass: string;
+  bgClass: string;
+}) {
+  return (
+    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${bgClass}`}>
+      <Icon className={`w-3.5 h-3.5 ${colorClass} flex-shrink-0`} />
+      <div className="min-w-0">
+        <p className={`text-[14px] font-bold font-mono ${colorClass}`}>{value}</p>
+        <p className="text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] whitespace-nowrap">{label}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function SecurityPage() {
   const { latestScore } = useHealthStore();
   const { recentEvents } = useEventStore();
   const { incidents } = useIncidentStore();
-
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [securityStats, setSecurityStats] = useState<SecurityStatsResponse | null>(null);
+
+  // Fetch security stats
+  useEffect(() => {
+    let mounted = true;
+    async function fetchStats() {
+      try {
+        const data = await api.security.getStats();
+        if (mounted) setSecurityStats(data);
+      } catch {
+        // Backend may not be ready
+      }
+    }
+    fetchStats();
+    const interval = setInterval(fetchStats, 30_000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   const securityScore = latestScore?.component_scores?.security ?? 100;
   
@@ -65,9 +110,57 @@ export default function SecurityPage() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full lg:min-h-0">
+      {/* Security Stats Pills */}
+      {securityStats && (
+        <div className="flex flex-wrap gap-2">
+          <StatPill
+            label="Failed Logins"
+            value={securityStats.failed_logins_24h}
+            icon={LogOut}
+            colorClass={securityStats.failed_logins_24h > 10 ? "text-[var(--color-severity-high)]" : "text-[var(--color-text-secondary)]"}
+            bgClass={securityStats.failed_logins_24h > 10
+              ? "bg-[hsl(25_95%_55%_/_0.06)] border-[hsl(25_95%_55%_/_0.15)]"
+              : "bg-[var(--color-surface-800)] border-[var(--color-surface-700)]"}
+          />
+          <StatPill
+            label="Successful Logins"
+            value={securityStats.successful_logins_24h}
+            icon={LogIn}
+            colorClass="text-emerald-400"
+            bgClass="bg-[hsl(142_71%_45%_/_0.05)] border-[hsl(142_71%_45%_/_0.12)]"
+          />
+          <StatPill
+            label="Threats Detected"
+            value={securityStats.threats_detected_24h}
+            icon={AlertTriangle}
+            colorClass={securityStats.threats_detected_24h > 0 ? "text-[var(--color-severity-critical)]" : "text-[var(--color-text-muted)]"}
+            bgClass={securityStats.threats_detected_24h > 0
+              ? "bg-[hsl(0_85%_55%_/_0.08)] border-[hsl(0_85%_55%_/_0.2)]"
+              : "bg-[var(--color-surface-800)] border-[var(--color-surface-700)]"}
+          />
+          <StatPill
+            label="Brute Force"
+            value={securityStats.brute_force_attempts > 0 ? "⚠ Detected" : "None"}
+            icon={ShieldAlert}
+            colorClass={securityStats.brute_force_attempts > 0 ? "text-[var(--color-severity-critical)]" : "text-[var(--color-text-muted)]"}
+            bgClass={securityStats.brute_force_attempts > 0
+              ? "bg-[hsl(0_85%_55%_/_0.08)] border-[hsl(0_85%_55%_/_0.2)]"
+              : "bg-[var(--color-surface-800)] border-[var(--color-surface-700)]"}
+          />
+          <StatPill
+            label="Total Events (24h)"
+            value={securityStats.total_security_events_24h}
+            icon={Activity}
+            colorClass="text-[var(--color-text-secondary)]"
+            bgClass="bg-[var(--color-surface-800)] border-[var(--color-surface-700)]"
+          />
+        </div>
+      )}
+
+      {/* Main Two-Column Layout — now fully responsive */}
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 flex-1 min-h-0">
         {/* Left Column: Active Threats (Incidents) */}
-        <div className="w-full lg:w-1/2 flex flex-col gap-3 min-h-[300px]">
+        <div className="w-full lg:w-1/2 flex flex-col gap-3 min-h-[300px] lg:min-h-0">
           <div className="flex items-center justify-between pl-1 pr-2">
              <h3 className="text-[11px] font-medium tracking-widest uppercase text-[var(--color-text-secondary)] flex items-center gap-2">
                <Activity className="w-3.5 h-3.5 opacity-60 text-[var(--color-severity-high)]" /> Active Threats
@@ -107,8 +200,8 @@ export default function SecurityPage() {
           </div>
         </div>
 
-        {/* Right Column: Live Security Event Stream */}
-        <div className="w-1/2 flex flex-col gap-3">
+        {/* Right Column: Live Security Event Stream — now responsive (was w-1/2 fixed) */}
+        <div className="w-full lg:w-1/2 flex flex-col gap-3 min-h-[300px] lg:min-h-0">
            <div className="flex items-center justify-between pl-1 pr-2">
              <h3 className="text-[11px] font-medium tracking-widest uppercase text-[var(--color-text-secondary)] flex items-center gap-2">
                <Search className="w-3.5 h-3.5 opacity-60 text-[var(--color-brand-400)]" /> Event Stream
@@ -152,6 +245,9 @@ export default function SecurityPage() {
                          <p className="font-medium text-[13px] text-[var(--color-text-primary)] truncate mb-1.5">{event.title}</p>
                          <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-medium text-[var(--color-text-muted)]">
                            <span>{event.source}</span>
+                           {event.source_id && (
+                             <span className="text-[var(--color-brand-500)] font-mono">Event {event.source_id}</span>
+                           )}
                          </div>
                        </div>
                      </button>
