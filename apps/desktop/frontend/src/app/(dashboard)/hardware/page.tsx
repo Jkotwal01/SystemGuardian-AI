@@ -44,7 +44,7 @@ export default function HardwarePage() {
   );
 
   return (
-    <div className="flex flex-col h-full gap-4 md:gap-6 p-4 md:p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
+    <div className="flex flex-col min-h-full gap-4 md:gap-6 p-4 md:p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
       <div className="flex items-center gap-4 mb-1 pl-1">
         <div className="p-2.5 bg-[var(--color-surface-900)] rounded-lg text-[var(--color-text-primary)] border border-[var(--color-surface-700)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
           <Server className="w-5 h-5 md:w-6 md:h-6 opacity-80" />
@@ -72,7 +72,7 @@ export default function HardwarePage() {
         </div>
 
         <div className="flex-1 glass-card rounded-lg border border-[var(--color-surface-700)] overflow-hidden flex flex-col bg-[var(--color-surface-900)]">
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+          <div className="flex-1 p-4 flex flex-col gap-2">
             {hardwareEvents.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-[var(--color-text-muted)]">
                 <div className="w-10 h-10 rounded-full bg-[var(--color-surface-800)] flex items-center justify-center border border-[var(--color-surface-700)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] mb-1">

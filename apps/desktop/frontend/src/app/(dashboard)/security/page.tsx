@@ -90,7 +90,7 @@ export default function SecurityPage() {
   }
 
   return (
-    <div className="flex flex-col h-full gap-4 md:gap-6 p-4 md:p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
+    <div className="flex flex-col min-h-full gap-4 md:gap-6 p-4 md:p-6 animate-fade-in overflow-y-auto bg-[var(--color-surface-950)]">
       {/* Top Bar: Security Score */}
       <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-6 rounded-lg border gap-4 ${scoreBgClass}`}>
         <div className="flex items-center gap-4 md:gap-5">
@@ -180,7 +180,7 @@ export default function SecurityPage() {
                 <p className="text-[11px] opacity-70">Your system is secure.</p>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5">
+              <div className="flex-1 p-4 flex flex-col gap-2.5">
                 {highSeverityIncidents.map((incident) => (
                   <div key={incident.id} className="p-4 rounded-md bg-[var(--color-surface-800)] border border-[var(--color-surface-700)] shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
                     <div className="flex justify-between items-start mb-2.5">
@@ -220,7 +220,7 @@ export default function SecurityPage() {
                  <p className="text-[13px] font-medium">No security events detected recently.</p>
                </div>
             ) : (
-               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+               <div className="flex-1 p-4 flex flex-col gap-2">
                  {securityEvents.map((event, i) => {
                    const hasAI = !!event.ai_insight;
                    const isHigh = event.severity === "high" || event.severity === "critical";

@@ -92,7 +92,7 @@ export default function IncidentsPage() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-full gap-4 lg:gap-6 p-4 lg:p-6 animate-fade-in bg-[var(--color-surface-950)] overflow-y-auto lg:overflow-hidden">
+    <div className="flex flex-col lg:flex-row min-h-full gap-4 lg:gap-6 p-4 lg:p-6 animate-fade-in bg-[var(--color-surface-950)] ">
       {/* Left Column: Incident List */}
       <div className="w-full lg:w-1/3 flex flex-col gap-3 lg:h-full min-h-[300px]">
         {/* Filter tabs */}
@@ -134,7 +134,7 @@ export default function IncidentsPage() {
                </p>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5 max-h-[40vh] lg:max-h-full">
+            <div className="flex-1 p-2 flex flex-col gap-1.5 ">
               {filteredIncidents.map((incident) => (
                 <button
                   key={incident.id}
@@ -167,7 +167,7 @@ export default function IncidentsPage() {
          <h2 className="text-[11px] font-medium tracking-widest uppercase text-[var(--color-text-secondary)] pl-1">Details</h2>
          <div className="flex-1 glass-card overflow-hidden flex flex-col relative bg-[var(--color-surface-900)]">
            {selectedIncident ? (
-             <div className="flex-1 overflow-y-auto">
+             <div className="flex-1">
                 <div className="px-8 py-8 border-b border-[var(--color-surface-700)] bg-[var(--color-surface-800)]/30">
                   <div className="flex items-center gap-3 mb-4 flex-wrap">
                     <SeverityBadge severity={selectedIncident.severity} />
