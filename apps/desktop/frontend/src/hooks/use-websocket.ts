@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 import { useHealthStore } from "../stores/health-store";
 import { useEventStore } from "../stores/event-store";
 import { useIncidentStore } from "../stores/incident-store";
-import { HealthScoreRead, EventRead, IncidentRead } from "../lib/types";
+import { HealthScoreRead, EventRead, IncidentRead, NotificationRead } from "../lib/types";
+import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
 
 const WS_BASE = "ws://127.0.0.1:8765/ws";
 
@@ -52,6 +53,9 @@ export function useWebSockets() {
             updateEvent(msg.data as EventRead);
           } else if (msg.type === "incident_created" || msg.type === "incident_updated") {
             addOrUpdateIncident(msg.data as IncidentRead);
+          } else if (msg.type === "notification") {
+            const notif = msg.data as NotificationRead;
+            triggerNativeNotification(notif);
           }
         } catch (err) {
           console.error("Events WS parse error", err);
@@ -61,6 +65,21 @@ export function useWebSockets() {
       ws.onclose = () => {
         if (mounted) eventsTimeout = setTimeout(connectEvents, 3000);
       };
+    };
+
+    const triggerNativeNotification = async (notif: NotificationRead) => {
+      try {
+        let permissionGranted = await isPermissionGranted();
+        if (!permissionGranted) {
+          const permission = await requestPermission();
+          permissionGranted = permission === "granted";
+        }
+        if (permissionGranted) {
+          sendNotification({ title: notif.title, body: notif.message });
+        }
+      } catch (err) {
+        console.error("Failed to send native notification", err);
+      }
     };
 
     connectMetrics();

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { WindowControls } from "./WindowControls";
+import { NotificationBell } from "./NotificationBell";
 import { useBackendStatus } from "@/hooks/useBackendStatus";
 import { Menu, Bot, BotOff } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
@@ -140,7 +141,10 @@ export function TopBar() {
         </div>
       </div>
 
-      <WindowControls />
+      <div className="flex items-center gap-2">
+        <NotificationBell />
+        <WindowControls />
+      </div>
     </header>
   );
 }

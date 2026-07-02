@@ -69,10 +69,17 @@ async def setup_websocket_bridge() -> None:
         data = incident.model_dump(mode="json") if hasattr(incident, "model_dump") else incident
         await events_manager.broadcast({"type": "incident_updated", "data": data})
 
+    async def on_notification_ready(notification: Any) -> None:
+        data = notification.model_dump(mode="json") if hasattr(notification, "model_dump") else notification
+        if hasattr(notification, "created_at") and not isinstance(data.get("created_at"), str):
+            data["created_at"] = notification.created_at.isoformat()
+        await events_manager.broadcast({"type": "notification", "data": data})
+
     event_bus.subscribe(Events.HEALTH_SCORE_UPDATED, on_health_score)
     event_bus.subscribe(Events.EVENT_PROCESSED, on_event_processed)
     event_bus.subscribe(Events.INCIDENT_CREATED, on_incident_created)
     event_bus.subscribe(Events.INCIDENT_UPDATED, on_incident_updated)
+    event_bus.subscribe(Events.NOTIFICATION_READY, on_notification_ready)
     logger.info("WebSocket bridge initialized.")
 
 
