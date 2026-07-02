@@ -19,6 +19,8 @@ from app.collectors.normalizer import EventNormalizerMixin
 from app.collectors.registry import CollectorRegistry
 from app.domain.enums import EventCategory, Severity
 from app.models.event import EventModel
+from app.models.hardware_metric import HardwareMetricModel
+from app.repositories.metric_repository import HardwareMetricRepository
 
 logger = structlog.get_logger()
 
@@ -81,6 +83,19 @@ class HardwareCollector(BaseCollector, EventNormalizerMixin):
         # ── RAM ──────────────────────────────────────────────────────────────
         mem = psutil.virtual_memory()
         metrics["ram_total_gb"] = round(mem.total / 1024**3, 2)
+
+        # Save time-series metric row for the API
+        metric_repo = HardwareMetricRepository(self._session)
+        hw_metric = HardwareMetricModel(
+            cpu_usage_percent=psutil.cpu_percent(),
+            memory_usage_percent=mem.percent,
+            memory_total_bytes=mem.total,
+            memory_available_bytes=mem.available,
+            cpu_temperature_celsius=temps.get("coretemp", [{"current": None}])[0]["current"] if temps and "coretemp" in temps else None,
+            battery_percent=metrics.get("battery_percent"),
+            is_plugged_in=metrics.get("battery_plugged"),
+        )
+        await metric_repo.save(hw_metric)
 
         # ── Severity decision ────────────────────────────────────────────────
         severity = self._evaluate_severity(metrics)

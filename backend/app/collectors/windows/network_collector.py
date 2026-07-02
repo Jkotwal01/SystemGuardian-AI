@@ -18,6 +18,9 @@ from app.collectors.normalizer import EventNormalizerMixin
 from app.collectors.registry import CollectorRegistry
 from app.domain.enums import EventCategory, Severity
 from app.models.event import EventModel
+import time
+from app.models.network_metric import NetworkMetricModel
+from app.repositories.metric_repository import NetworkMetricRepository
 
 logger = structlog.get_logger()
 
@@ -36,11 +39,40 @@ class NetworkCollector(BaseCollector, EventNormalizerMixin):
     name = "windows_network"
     module = EventCategory.NETWORK
 
+    _last_io = {}
+    _last_time = 0.0
+
     async def _collect(self) -> list[EventModel]:
         # ── Per-interface I/O counters ───────────────────────────────────────
+        now = time.time()
+        dt = now - self.__class__._last_time if self.__class__._last_time else 1.0
+        self.__class__._last_time = now
+
         io_counters: dict[str, Any] = {}
         net_io = psutil.net_io_counters(pernic=True)
+        metric_repo = NetworkMetricRepository(self._session)
+
         for iface, stats in net_io.items():
+            prev = self.__class__._last_io.get(iface, stats)
+            self.__class__._last_io[iface] = stats
+
+            bytes_sent_ps = max(0.0, (stats.bytes_sent - prev.bytes_sent) / dt)
+            bytes_recv_ps = max(0.0, (stats.bytes_recv - prev.bytes_recv) / dt)
+            pkts_sent_ps = max(0.0, (stats.packets_sent - prev.packets_sent) / dt)
+            pkts_recv_ps = max(0.0, (stats.packets_recv - prev.packets_recv) / dt)
+
+            # Save time-series metric row for the API
+            net_metric = NetworkMetricModel(
+                interface=iface,
+                bytes_sent_per_sec=bytes_sent_ps,
+                bytes_recv_per_sec=bytes_recv_ps,
+                packets_sent_per_sec=pkts_sent_ps,
+                packets_recv_per_sec=pkts_recv_ps,
+                errors_in=stats.errin,
+                errors_out=stats.errout,
+            )
+            await metric_repo.save(net_metric)
+
             io_counters[iface] = {
                 "bytes_sent": stats.bytes_sent,
                 "bytes_recv": stats.bytes_recv,

@@ -18,6 +18,9 @@ from app.collectors.normalizer import EventNormalizerMixin
 from app.collectors.registry import CollectorRegistry
 from app.domain.enums import EventCategory, Severity
 from app.models.event import EventModel
+import time
+from app.models.disk_metric import DiskMetricModel
+from app.repositories.metric_repository import DiskMetricRepository
 
 logger = structlog.get_logger()
 
@@ -35,10 +38,37 @@ class StorageCollector(BaseCollector, EventNormalizerMixin):
     name = "windows_storage"
     module = EventCategory.STORAGE
 
+    _last_io = {}
+    _last_time = 0.0
+
     async def _collect(self) -> list[EventModel]:
-        # ── Per-partition usage ──────────────────────────────────────────────
+        # ── Per-partition usage & Metric Persistence ───────────────────────────
+        now = time.time()
+        dt = now - self.__class__._last_time if self.__class__._last_time else 1.0
+        self.__class__._last_time = now
+
         partitions: list[dict[str, Any]] = []
         max_severity = Severity.INFO
+        metric_repo = DiskMetricRepository(self._session)
+
+        # Get system-wide IO to distribute (psutil doesn't give per-partition easily on Windows)
+        try:
+            sys_io = psutil.disk_io_counters()
+            if sys_io:
+                prev_sys = self.__class__._last_io.get("sys", sys_io)
+                self.__class__._last_io["sys"] = sys_io
+                
+                # Approximate per-disk IO by dividing system IO by number of partitions
+                # This is a limitation of psutil on Windows (disk_io_counters(perdisk=True) gives PhysicalDriveX, not C:)
+                part_count = max(1, len(psutil.disk_partitions(all=False)))
+                read_ps = max(0.0, (sys_io.read_bytes - prev_sys.read_bytes) / dt) / part_count
+                write_ps = max(0.0, (sys_io.write_bytes - prev_sys.write_bytes) / dt) / part_count
+            else:
+                read_ps = 0.0
+                write_ps = 0.0
+        except (AttributeError, OSError):
+            read_ps = 0.0
+            write_ps = 0.0
 
         for part in psutil.disk_partitions(all=False):
             try:
@@ -47,6 +77,19 @@ class StorageCollector(BaseCollector, EventNormalizerMixin):
                 sev = self._classify_disk_severity(pct)
                 if list(Severity).index(sev) < list(Severity).index(max_severity):
                     max_severity = sev
+
+                # Save time-series metric row for the API
+                disk_metric = DiskMetricModel(
+                    device=part.device,
+                    mountpoint=part.mountpoint,
+                    total_bytes=usage.total,
+                    used_bytes=usage.used,
+                    free_bytes=usage.free,
+                    usage_percent=pct,
+                    read_bytes_per_sec=read_ps,
+                    write_bytes_per_sec=write_ps,
+                )
+                await metric_repo.save(disk_metric)
 
                 partitions.append(
                     {
