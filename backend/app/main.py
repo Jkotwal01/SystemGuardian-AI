@@ -24,7 +24,9 @@ from app.api.v1.health_score import router as health_router
 from app.api.v1.incidents import router as incidents_router
 from app.api.v1.metrics import router as metrics_router
 from app.api.v1.security import router as security_router
+from app.api.v1.chat import router as chat_router
 from app.api.websocket import setup_websocket_bridge, ws_router
+from app.ai.assistant import AIAssistant
 from app.ai.explanation_engine import ExplanationEngine
 from app.ai.fallback_provider import FallbackAIProvider
 from app.ai.providers.gemini import GeminiProvider
@@ -80,6 +82,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("ai_provider_initialized", providers=["ollama", "gemini"])
 
     pipeline = create_default_pipeline(event_bus, explanation_engine=explanation_engine)
+
+    # Initialize AI Assistant for Chat
+    app.state.ai_assistant = AIAssistant(ai_provider, session_factory)
+    logger.info("ai_assistant_initialized")
 
     health_engine = HealthScoreEngine()
 
@@ -154,6 +160,7 @@ def create_app() -> FastAPI:
     application.include_router(health_router, prefix="/api/v1")
     application.include_router(metrics_router, prefix="/api/v1")
     application.include_router(security_router, prefix="/api/v1")
+    application.include_router(chat_router, prefix="/api/v1")
     application.include_router(ai_status_router, prefix="/api/v1")
     application.include_router(ws_router)
 
