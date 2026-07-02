@@ -2,7 +2,6 @@
 
 > **AI-powered operating system intelligence platform** — Local-first, privacy-first, production-grade desktop application for Windows.
 
-[![CI](https://github.com/your-org/system-guardian-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/system-guardian-ai/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Commercial-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue.svg)]()
 
