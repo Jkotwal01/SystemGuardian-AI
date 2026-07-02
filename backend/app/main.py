@@ -25,6 +25,7 @@ from app.api.v1.incidents import router as incidents_router
 from app.api.v1.metrics import router as metrics_router
 from app.api.v1.security import router as security_router
 from app.api.v1.chat import router as chat_router
+from app.api.v1.predictions import router as predictions_router
 from app.api.websocket import setup_websocket_bridge, ws_router
 from app.ai.assistant import AIAssistant
 from app.ai.explanation_engine import ExplanationEngine
@@ -161,6 +162,7 @@ def create_app() -> FastAPI:
     application.include_router(metrics_router, prefix="/api/v1")
     application.include_router(security_router, prefix="/api/v1")
     application.include_router(chat_router, prefix="/api/v1")
+    application.include_router(predictions_router, prefix="/api/v1")
     application.include_router(ai_status_router, prefix="/api/v1")
     application.include_router(ws_router)
 

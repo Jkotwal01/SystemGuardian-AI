@@ -194,9 +194,15 @@ class MonitoringScheduler:
     async def _run_predictions(self) -> None:
         """
         Hourly predictive analytics pass.
-        Phase 9 will implement the full ML-based prediction engine.
+        Runs the PredictionEngine.
         """
-        logger.debug("scheduler.predictions_running")
+        try:
+            from app.engines.prediction_engine import PredictionEngine
+            async with self._session_factory() as session:
+                engine = PredictionEngine()
+                await engine.run(session)
+        except Exception:
+            logger.exception("scheduler.predictions_failed")
 
     async def _generate_daily_report(self) -> None:
         """
