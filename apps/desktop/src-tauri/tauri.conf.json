@@ -29,8 +29,7 @@
     },
     "trayIcon": {
       "iconPath": "icons/32x32.png",
-      "iconAsTemplate": true,
-      "menuOnLeftClick": false
+      "iconAsTemplate": true
     }
   },
   "bundle": {
@@ -43,7 +42,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [],
+    "resources": [
+      "../../../backend/dist/sgai-backend.exe"
+    ],
     "externalBin": [],
     "copyright": "",
     "category": "Utility",
