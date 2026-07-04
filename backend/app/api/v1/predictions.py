@@ -1,3 +1,4 @@
+from typing import Any
 from collections.abc import AsyncGenerator
 
 from fastapi import APIRouter, Depends
@@ -17,7 +18,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 @router.get("")
 @router.get("/")
-async def get_active_predictions(db: AsyncSession = Depends(get_session)):
+async def get_active_predictions(db: AsyncSession = Depends(get_session)) -> Any:
     """Get all active predictions."""
     repo = PredictionRepository(db)
     predictions = await repo.get_active_predictions(min_probability=0.1)
@@ -40,7 +41,7 @@ async def get_active_predictions(db: AsyncSession = Depends(get_session)):
 
 
 @router.post("/run")
-async def run_predictions(db: AsyncSession = Depends(get_session)):
+async def run_predictions(db: AsyncSession = Depends(get_session)) -> Any:
     """Manually trigger the prediction engine (for testing)."""
     engine = PredictionEngine()
     await engine.run(db)

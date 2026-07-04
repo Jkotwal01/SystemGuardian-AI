@@ -30,21 +30,7 @@ class ChatMessageRepository(BaseRepository[ChatMessageModel]):
 
     async def get_sessions(self, limit: int = 10) -> list[str]:
         """Get recent distinct session IDs."""
-        stmt = (
-            select(self.model.session_id)
-            .group_by(self.model.session_id)
-            .order_by(
-                desc(
-                    select(self.model.timestamp)
-                    .where(self.model.session_id == self.model.session_id)
-                    .scalar_subquery()
-                )
-            )
-            .limit(limit)
-        )
-        # Simplify the group_by query for SQLite
         from sqlalchemy import func
-
         stmt = (
             select(self.model.session_id, func.max(self.model.timestamp).label("max_ts"))
             .group_by(self.model.session_id)

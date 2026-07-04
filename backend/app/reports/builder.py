@@ -23,7 +23,7 @@ logger = structlog.get_logger()
 class ReportBuilder(ABC):
     """Base for all report types. Uses LLM to generate the written analysis."""
 
-    def __init__(self, session: AsyncSession, ai_provider=None) -> None:
+    def __init__(self, session: AsyncSession, ai_provider: Any = None) -> None:
         self._session = session
         self._ai_provider = ai_provider
 

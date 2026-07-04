@@ -17,9 +17,9 @@ fn find_project_root() -> Option<PathBuf> {
     // In dev, __DIR__ is the src-tauri/src directory.
     // We walk upward from the manifest directory baked in at compile time.
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")); // …/apps/desktop/src-tauri
-    // Go up three levels: src-tauri → desktop → apps → project root
+                                                                  // Go up three levels: src-tauri → desktop → apps → project root
     manifest_dir
-        .parent()  // apps/desktop
+        .parent() // apps/desktop
         .and_then(|p| p.parent()) // apps
         .and_then(|p| p.parent()) // project root
         .map(|p| p.to_path_buf())
@@ -33,21 +33,35 @@ fn spawn_backend(root: &PathBuf) -> std::io::Result<Child> {
     // Prefer the venv uvicorn; fall back to system uvicorn
     #[cfg(target_os = "windows")]
     let uvicorn = {
-        let venv = backend_dir.join(".venv").join("Scripts").join("uvicorn.exe");
-        if venv.exists() { venv } else { PathBuf::from("uvicorn") }
+        let venv = backend_dir
+            .join(".venv")
+            .join("Scripts")
+            .join("uvicorn.exe");
+        if venv.exists() {
+            venv
+        } else {
+            PathBuf::from("uvicorn")
+        }
     };
     #[cfg(not(target_os = "windows"))]
     let uvicorn = {
         let venv = backend_dir.join(".venv").join("bin").join("uvicorn");
-        if venv.exists() { venv } else { PathBuf::from("uvicorn") }
+        if venv.exists() {
+            venv
+        } else {
+            PathBuf::from("uvicorn")
+        }
     };
 
     Command::new(uvicorn)
         .args([
             "app.main:app",
-            "--host", "127.0.0.1",
-            "--port", "8765",
-            "--log-level", "warning",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "8765",
+            "--log-level",
+            "warning",
         ])
         .current_dir(&backend_dir)
         .stdout(Stdio::inherit())

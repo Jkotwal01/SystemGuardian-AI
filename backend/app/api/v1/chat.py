@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
 
 from app.core.database import DatabaseManager
 from app.repositories.chat_message_repository import ChatMessageRepository
@@ -27,7 +28,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-def get_ai_assistant(request: Request) -> AIAssistant:
+def get_ai_assistant(request: Request) -> Any:
     """Dependency to retrieve the AIAssistant instance from app state."""
     # We will inject this from main.py via request.app.state
     if not hasattr(request.app.state, "ai_assistant"):
@@ -46,7 +47,7 @@ async def chat_stream_endpoint(
     """
     assistant = get_ai_assistant(req)
 
-    async def event_generator():
+    async def event_generator() -> Any:
         try:
             async for chunk in assistant.chat_stream(request.session_id, request.message):
                 # Yield as Server-Sent Events (SSE) or just raw text?

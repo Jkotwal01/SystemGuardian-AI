@@ -1,3 +1,4 @@
+from typing import Any
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime, timedelta
 
@@ -7,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import DatabaseManager
 from app.domain.enums import ReportType
-from app.reports.builder import DailyReportBuilder, WeeklyReportBuilder
+from app.reports.builder import DailyReportBuilder, WeeklyReportBuilder, ReportBuilder
 from app.reports.exporters.factory import ExporterFactory
 from app.repositories.report_repository import ReportRepository
 
@@ -28,7 +29,7 @@ def utcnow() -> datetime:
 
 @router.get("")
 @router.get("/")
-async def get_reports(limit: int = 20, db: AsyncSession = Depends(get_session)):
+async def get_reports(limit: int = 20, db: AsyncSession = Depends(get_session)) -> Any:
     """List historical reports, newest first."""
     repo = ReportRepository(db)
     reports = await repo.get_recent(limit=limit)
@@ -50,7 +51,7 @@ async def generate_report(
     request: Request,
     report_type: ReportType = Query(ReportType.DAILY),
     db: AsyncSession = Depends(get_session),
-):
+) -> Any:
     """Manually trigger report generation (with AI analysis)."""
     end = utcnow()
 
@@ -61,7 +62,7 @@ async def generate_report(
 
     if report_type == ReportType.DAILY:
         start = end - timedelta(days=1)
-        builder = DailyReportBuilder(db, ai_provider=ai_provider)
+        builder: ReportBuilder = DailyReportBuilder(db, ai_provider=ai_provider)
     else:
         start = end - timedelta(days=7)
         builder = WeeklyReportBuilder(db, ai_provider=ai_provider)
@@ -76,7 +77,7 @@ async def generate_report(
 
 
 @router.get("/{report_id}/view", response_class=Response)
-async def view_report_html(report_id: str, db: AsyncSession = Depends(get_session)):
+async def view_report_html(report_id: str, db: AsyncSession = Depends(get_session)) -> Any:
     """Render the report as HTML inline (same as HTML export but no download header)."""
     repo = ReportRepository(db)
     report = await repo.get_by_id(report_id)
@@ -101,7 +102,7 @@ async def view_report_html(report_id: str, db: AsyncSession = Depends(get_sessio
 @router.get("/{report_id}/export")
 async def export_report(
     report_id: str, format: str = Query("html"), db: AsyncSession = Depends(get_session)
-):
+) -> Any:
     """Export a report as a downloadable file (html or json)."""
     repo = ReportRepository(db)
     report = await repo.get_by_id(report_id)
@@ -133,7 +134,7 @@ async def export_report(
 
 
 @router.get("/{report_id}")
-async def get_report(report_id: str, db: AsyncSession = Depends(get_session)):
+async def get_report(report_id: str, db: AsyncSession = Depends(get_session)) -> Any:
     """Get a specific report with full content payload."""
     repo = ReportRepository(db)
     report = await repo.get_by_id(report_id)
@@ -152,7 +153,7 @@ async def get_report(report_id: str, db: AsyncSession = Depends(get_session)):
 
 
 @router.delete("/{report_id}")
-async def delete_report(report_id: str, db: AsyncSession = Depends(get_session)):
+async def delete_report(report_id: str, db: AsyncSession = Depends(get_session)) -> Any:
     """Permanently delete a report from the database."""
     repo = ReportRepository(db)
     deleted = await repo.delete(report_id)

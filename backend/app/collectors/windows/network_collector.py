@@ -39,7 +39,7 @@ class NetworkCollector(BaseCollector, EventNormalizerMixin):
     name = "windows_network"
     module = EventCategory.NETWORK
 
-    _last_io = {}
+    _last_io: dict[str, Any] = {}
     _last_time = 0.0
 
     async def _collect(self) -> list[EventModel]:

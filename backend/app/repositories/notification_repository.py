@@ -20,7 +20,7 @@ class NotificationRepository(BaseRepository[NotificationModel]):
         stmt = (
             select(func.count())
             .select_from(NotificationModel)
-            .where(not NotificationModel.is_read)
+            .where(NotificationModel.is_read.is_(False))
         )
         result = await self._session.execute(stmt)
         return result.scalar() or 0
@@ -40,7 +40,7 @@ class NotificationRepository(BaseRepository[NotificationModel]):
     async def mark_all_as_read(self) -> None:
         """Marks all unread notifications as read."""
         stmt = (
-            update(NotificationModel).where(not NotificationModel.is_read).values(is_read=True)
+            update(NotificationModel).where(NotificationModel.is_read.is_(False)).values(is_read=True)
         )
         await self._session.execute(stmt)
         await self._session.commit()

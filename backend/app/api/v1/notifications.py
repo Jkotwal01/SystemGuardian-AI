@@ -1,3 +1,4 @@
+from typing import Any
 from collections.abc import AsyncGenerator
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,7 +17,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 @router.get("")
 @router.get("/")
-async def get_notifications(limit: int = 50, db: AsyncSession = Depends(get_session)):
+async def get_notifications(limit: int = 50, db: AsyncSession = Depends(get_session)) -> Any:
     """Get recent notifications."""
     repo = NotificationRepository(db)
     notifications = await repo.get_recent(limit=limit)
@@ -35,7 +36,7 @@ async def get_notifications(limit: int = 50, db: AsyncSession = Depends(get_sess
 
 
 @router.get("/unread-count")
-async def get_unread_count(db: AsyncSession = Depends(get_session)):
+async def get_unread_count(db: AsyncSession = Depends(get_session)) -> Any:
     """Get count of unread notifications."""
     repo = NotificationRepository(db)
     count = await repo.get_unread_count()
@@ -43,7 +44,7 @@ async def get_unread_count(db: AsyncSession = Depends(get_session)):
 
 
 @router.patch("/{notification_id}/read")
-async def mark_read(notification_id: str, db: AsyncSession = Depends(get_session)):
+async def mark_read(notification_id: str, db: AsyncSession = Depends(get_session)) -> Any:
     """Mark a notification as read."""
     repo = NotificationRepository(db)
     notification = await repo.mark_as_read(notification_id)
@@ -53,7 +54,7 @@ async def mark_read(notification_id: str, db: AsyncSession = Depends(get_session
 
 
 @router.post("/read-all")
-async def mark_all_read(db: AsyncSession = Depends(get_session)):
+async def mark_all_read(db: AsyncSession = Depends(get_session)) -> Any:
     """Mark all notifications as read."""
     repo = NotificationRepository(db)
     await repo.mark_all_as_read()
