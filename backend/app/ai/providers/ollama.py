@@ -64,7 +64,6 @@ class OllamaProvider(BaseAIProvider):
                     "system": system_prompt,
                     "prompt": user_message,
                     "stream": False,
-                    "format": "json",
                     "options": {
                         "temperature": opts.temperature,
                         "num_predict": opts.max_tokens,

@@ -12,6 +12,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 @router.get("")
+@router.get("/")
 async def get_active_predictions(db: AsyncSession = Depends(get_session)):
     """Get all active predictions."""
     repo = PredictionRepository(db)

@@ -9,15 +9,15 @@ export function SplashWrapper({ children }: { children: React.ReactNode }) {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Start fade out after 5.5 seconds
+    // Start fade out after 1.5 seconds
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
-    }, 5500);
+    }, 1500);
 
-    // Remove splash completely after 6 seconds
+    // Remove splash completely after 2 seconds
     const removeTimer = setTimeout(() => {
       setShowSplash(false);
-    }, 6000);
+    }, 2000);
 
     return () => {
       clearTimeout(fadeTimer);

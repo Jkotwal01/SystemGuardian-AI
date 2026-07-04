@@ -11,6 +11,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 @router.get("")
+@router.get("/")
 async def get_notifications(limit: int = 50, db: AsyncSession = Depends(get_session)):
     """Get recent notifications."""
     repo = NotificationRepository(db)
