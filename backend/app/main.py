@@ -28,6 +28,7 @@ from app.api.v1.chat import router as chat_router
 from app.api.v1.predictions import router as predictions_router
 from app.api.v1.notifications import router as notifications_router
 from app.api.v1.reports import router as reports_router
+from app.api.v1.settings import router as settings_router
 from app.api.websocket import setup_websocket_bridge, ws_router
 from app.ai.assistant import AIAssistant
 from app.ai.explanation_engine import ExplanationEngine
@@ -39,6 +40,7 @@ from app.config import get_settings
 from app.core.database import DatabaseManager
 from app.core.event_bus import event_bus
 from app.core.scheduler import MonitoringScheduler
+from app.core.settings_manager import SettingsManager
 from app.engines.health_score import HealthScoreEngine
 from app.engines.security import SecurityEngine
 from app.processors.pipeline import create_default_pipeline
@@ -65,12 +67,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings = get_settings()
     logger.info("system_guardian_starting", version="0.1.0")
 
-    # ── Phase 1: Database ─────────────────────────────────────────────────────
+    # ── Phase 1: Database & Settings ──────────────────────────────────────────
     await DatabaseManager.initialize(settings.db_path)
     logger.info("database_initialized", db_path=str(settings.db_path))
+    
+    session_factory = DatabaseManager.get_session_factory()
+    settings_mgr = SettingsManager.initialize(session_factory)
+    await settings_mgr.load()
+    logger.info("settings_manager_initialized")
 
     # ── Phase 2: Collector Orchestrator ───────────────────────────────────────
-    session_factory = DatabaseManager.get_session_factory()
     _orchestrator = CollectorOrchestrator(settings, session_factory)
     await _orchestrator.initialize()
     logger.info("orchestrator_initialized", collectors=_orchestrator.collector_count)
@@ -167,6 +173,7 @@ def create_app() -> FastAPI:
     application.include_router(predictions_router, prefix="/api/v1")
     application.include_router(notifications_router, prefix="/api/v1")
     application.include_router(reports_router, prefix="/api/v1")
+    application.include_router(settings_router, prefix="/api/v1")
     application.include_router(ai_status_router, prefix="/api/v1")
     application.include_router(ws_router)
 

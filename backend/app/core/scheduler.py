@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.collectors.orchestrator import CollectorOrchestrator
 from app.config import Settings
 from app.core.event_bus import EventBus
+from app.core.settings_manager import SettingsManager
 from app.engines.health_score import HealthScoreEngine
 from app.processors.pipeline import EventProcessingPipeline, Events
 
@@ -56,6 +57,8 @@ class MonitoringScheduler:
         self._bus = event_bus
         self._session_factory = session_factory
         self._scheduler = AsyncIOScheduler(timezone="UTC")
+        self._last_metrics_run = 0.0
+        self._last_events_run = 0.0
 
     # ── Job Registration ──────────────────────────────────────────────────────
 
@@ -80,21 +83,21 @@ class MonitoringScheduler:
     def _register_jobs(self) -> None:
         """Register all 7 scheduled jobs."""
 
-        # Job 1: Hardware/performance metrics — every 30 seconds
+        # Job 1: Hardware/performance metrics — checks every 5 seconds, throttles based on dynamic settings
         self._scheduler.add_job(
             self._collect_metrics,
             "interval",
-            seconds=self._settings.METRICS_INTERVAL_SECONDS,
+            seconds=5,
             id="metrics",
             max_instances=1,
             coalesce=True,
         )
 
-        # Job 2: OS event log collection — every 60 seconds
+        # Job 2: OS event log collection — checks every 5 seconds, throttles based on dynamic settings
         self._scheduler.add_job(
             self._collect_events,
             "interval",
-            seconds=self._settings.EVENT_POLL_INTERVAL_SECONDS,
+            seconds=5,
             id="events",
             max_instances=1,
             coalesce=True,
@@ -155,7 +158,14 @@ class MonitoringScheduler:
     # ── Job Implementations ────────────────────────────────────────────────────
 
     async def _collect_metrics(self) -> None:
-        """Collect hardware/performance metrics via orchestrator."""
+        """Collect hardware/performance metrics via orchestrator (dynamically throttled)."""
+        import time
+        now = time.time()
+        interval = SettingsManager.get_instance().get_int("metrics_interval_seconds", 30)
+        if now - self._last_metrics_run < interval:
+            return
+        self._last_metrics_run = now
+        
         try:
             async with self._session_factory() as session:
                 results = await self._orchestrator.run_metric_collectors(session)
@@ -164,7 +174,14 @@ class MonitoringScheduler:
             logger.exception("scheduler.metrics_collection_failed")
 
     async def _collect_events(self) -> None:
-        """Collect OS event logs, run each through the processing pipeline."""
+        """Collect OS event logs (dynamically throttled)."""
+        import time
+        now = time.time()
+        interval = SettingsManager.get_instance().get_int("event_poll_interval_seconds", 60)
+        if now - self._last_events_run < interval:
+            return
+        self._last_events_run = now
+
         try:
             async with self._session_factory() as session:
                 raw_events = await self._orchestrator.run_event_collectors(session)
@@ -224,12 +241,11 @@ class MonitoringScheduler:
             from app.models.event import EventModel
             from app.models.health_score import HealthScoreModel
 
-            event_cutoff = datetime.now(tz=UTC) - timedelta(
-                days=self._settings.EVENT_RETENTION_DAYS
-            )
-            metric_cutoff = datetime.now(tz=UTC) - timedelta(
-                days=self._settings.METRIC_RETENTION_DAYS
-            )
+            event_retention = SettingsManager.get_instance().get_int("event_retention_days", 90)
+            metric_retention = SettingsManager.get_instance().get_int("metric_retention_days", 30)
+
+            event_cutoff = datetime.now(tz=UTC) - timedelta(days=event_retention)
+            metric_cutoff = datetime.now(tz=UTC) - timedelta(days=metric_retention)
 
             async with self._session_factory() as session:
                 await session.execute(

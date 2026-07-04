@@ -19,6 +19,7 @@ import structlog
 
 from app.ai.base import AIResponse, BaseAIProvider, GenerateOptions
 from app.config import get_settings
+from app.core.settings_manager import SettingsManager
 
 logger = structlog.get_logger()
 
@@ -37,9 +38,15 @@ class GeminiProvider(BaseAIProvider):
     name = "gemini"
 
     def __init__(self) -> None:
-        settings = get_settings()
-        self._api_key = settings.GEMINI_API_KEY
-        self._timeout = settings.AI_TIMEOUT_SECONDS
+        pass
+
+    @property
+    def _api_key(self) -> str:
+        return SettingsManager.get_instance().get("gemini_api_key")
+
+    @property
+    def _timeout(self) -> int:
+        return get_settings().AI_TIMEOUT_SECONDS
 
     async def is_available(self) -> bool:
         """Available only if an API key is configured."""

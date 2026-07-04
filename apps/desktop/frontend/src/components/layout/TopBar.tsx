@@ -141,7 +141,7 @@ export function TopBar() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-6 pr-4 pointer-events-auto">
         <NotificationBell />
         <WindowControls />
       </div>

@@ -16,6 +16,7 @@ import structlog
 
 from app.ai.base import AIResponse, BaseAIProvider, GenerateOptions
 from app.config import get_settings
+from app.core.settings_manager import SettingsManager
 
 logger = structlog.get_logger()
 
@@ -33,10 +34,19 @@ class OllamaProvider(BaseAIProvider):
     name = "ollama"
 
     def __init__(self) -> None:
-        settings = get_settings()
-        self._base_url = settings.OLLAMA_BASE_URL.rstrip("/")
-        self._model = settings.OLLAMA_MODEL
-        self._timeout = settings.AI_TIMEOUT_SECONDS
+        pass
+
+    @property
+    def _base_url(self) -> str:
+        return SettingsManager.get_instance().get("ollama_base_url").rstrip("/")
+
+    @property
+    def _model(self) -> str:
+        return SettingsManager.get_instance().get("ollama_model")
+
+    @property
+    def _timeout(self) -> int:
+        return get_settings().AI_TIMEOUT_SECONDS
 
     async def is_available(self) -> bool:
         """Probe Ollama's tag list endpoint — fast and cheap."""

@@ -61,7 +61,7 @@ class CollectorOrchestrator:
             storage_collector,
         )
 
-        self._collector_classes = CollectorRegistry.get_enabled(self._settings)
+        self._collector_classes = list(CollectorRegistry.get_all().values())
         self._initialized = True
         logger.info(
             "orchestrator_initialized",
@@ -83,7 +83,14 @@ class CollectorOrchestrator:
             logger.warning("orchestrator_not_initialized")
             return []
 
-        async def _run_one(cls: type[BaseCollector]) -> CollectorResult:
+        from app.core.settings_manager import SettingsManager
+        
+        async def _run_one(cls: type[BaseCollector]) -> CollectorResult | None:
+            module_name = str(cls.module).lower()
+            is_enabled = SettingsManager.get_instance().get_bool(f"module_{module_name}", default=True)
+            if not is_enabled:
+                return None
+                
             async with self._session_factory() as session:
                 collector = cls(self._settings, session)
                 return await collector.run()
@@ -93,6 +100,8 @@ class CollectorOrchestrator:
 
         results: list[CollectorResult] = []
         for cls, result in zip(self._collector_classes, raw_results, strict=False):
+            if result is None:
+                continue
             if isinstance(result, CollectorResult):
                 results.append(result)
             else:

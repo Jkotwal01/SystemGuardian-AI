@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 };
 
 import { SplashWrapper } from "@/components/layout/SplashWrapper";
+import { OnboardingWrapper } from "@/components/layout/OnboardingWrapper";
 
 export default function RootLayout({
   children,
@@ -37,7 +38,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col antialiased" suppressHydrationWarning>
         <SplashWrapper>
-          {children}
+          <OnboardingWrapper>
+            {children}
+          </OnboardingWrapper>
         </SplashWrapper>
       </body>
     </html>
