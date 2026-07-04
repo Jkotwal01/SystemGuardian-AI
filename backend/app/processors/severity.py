@@ -42,6 +42,7 @@ def escalate_severity(base: Severity, steps: int = 1) -> Severity:
 
 # ── Base Strategy ─────────────────────────────────────────────────────────────
 
+
 class SeverityStrategy(ABC):
     """Abstract base for all severity classification strategies."""
 
@@ -53,6 +54,7 @@ class SeverityStrategy(ABC):
 
 # ── Strategy 1: Windows Event ID Map ─────────────────────────────────────────
 
+
 class WindowsEventIdSeverityStrategy(SeverityStrategy):
     """
     Maps well-known Windows Security/System Event IDs to severity levels.
@@ -61,32 +63,32 @@ class WindowsEventIdSeverityStrategy(SeverityStrategy):
 
     EVENT_SEVERITY_MAP: dict[str, Severity] = {
         # ── Security ──────────────────────────────────────────────────────────
-        "1102": Severity.CRITICAL,   # Audit log cleared — potential cover-up
-        "4719": Severity.CRITICAL,   # System audit policy changed
-        "4732": Severity.CRITICAL,   # Added to Administrators group
-        "4698": Severity.HIGH,       # Scheduled task created (persistence)
-        "4720": Severity.HIGH,       # User account created
-        "4728": Severity.HIGH,       # User added to security group
-        "4740": Severity.HIGH,       # Account locked out
-        "4756": Severity.HIGH,       # Added to Universal group
-        "4648": Severity.MEDIUM,     # Explicit credential login
-        "4672": Severity.MEDIUM,     # Admin privileges assigned
-        "4699": Severity.MEDIUM,     # Scheduled task deleted
-        "4724": Severity.MEDIUM,     # Password reset attempt
-        "4625": Severity.MEDIUM,     # Failed login
-        "4722": Severity.LOW,        # Account enabled
-        "4767": Severity.LOW,        # Account unlocked
-        "4624": Severity.INFO,       # Successful login
-        "4634": Severity.INFO,       # Logoff
+        "1102": Severity.CRITICAL,  # Audit log cleared — potential cover-up
+        "4719": Severity.CRITICAL,  # System audit policy changed
+        "4732": Severity.CRITICAL,  # Added to Administrators group
+        "4698": Severity.HIGH,  # Scheduled task created (persistence)
+        "4720": Severity.HIGH,  # User account created
+        "4728": Severity.HIGH,  # User added to security group
+        "4740": Severity.HIGH,  # Account locked out
+        "4756": Severity.HIGH,  # Added to Universal group
+        "4648": Severity.MEDIUM,  # Explicit credential login
+        "4672": Severity.MEDIUM,  # Admin privileges assigned
+        "4699": Severity.MEDIUM,  # Scheduled task deleted
+        "4724": Severity.MEDIUM,  # Password reset attempt
+        "4625": Severity.MEDIUM,  # Failed login
+        "4722": Severity.LOW,  # Account enabled
+        "4767": Severity.LOW,  # Account unlocked
+        "4624": Severity.INFO,  # Successful login
+        "4634": Severity.INFO,  # Logoff
         # ── System / Stability ────────────────────────────────────────────────
-        "41":   Severity.CRITICAL,   # Unexpected reboot (Kernel-Power)
-        "1001": Severity.HIGH,       # Windows Error Reporting (BSOD)
-        "6008": Severity.HIGH,       # Unexpected shutdown
-        "7045": Severity.HIGH,       # New service installed
-        "7034": Severity.HIGH,       # Service crashed
-        "7031": Severity.HIGH,       # Service terminated unexpectedly
-        "7023": Severity.MEDIUM,     # Service terminated with error
-        "7000": Severity.MEDIUM,     # Service failed to start
+        "41": Severity.CRITICAL,  # Unexpected reboot (Kernel-Power)
+        "1001": Severity.HIGH,  # Windows Error Reporting (BSOD)
+        "6008": Severity.HIGH,  # Unexpected shutdown
+        "7045": Severity.HIGH,  # New service installed
+        "7034": Severity.HIGH,  # Service crashed
+        "7031": Severity.HIGH,  # Service terminated unexpectedly
+        "7023": Severity.MEDIUM,  # Service terminated with error
+        "7000": Severity.MEDIUM,  # Service failed to start
     }
 
     async def classify(self, event: EventModel) -> Severity:
@@ -96,6 +98,7 @@ class WindowsEventIdSeverityStrategy(SeverityStrategy):
 
 
 # ── Strategy 2: Category Base Severity ───────────────────────────────────────
+
 
 class CategoryBaseSeverityStrategy(SeverityStrategy):
     """
@@ -125,6 +128,7 @@ class CategoryBaseSeverityStrategy(SeverityStrategy):
 
 
 # ── Strategy 3: Frequency Escalation ─────────────────────────────────────────
+
 
 class FrequencyEscalationStrategy(SeverityStrategy):
     """
@@ -164,6 +168,7 @@ class FrequencyEscalationStrategy(SeverityStrategy):
 
 
 # ── Composite Classifier ──────────────────────────────────────────────────────
+
 
 class CompositeSeverityClassifier:
     """

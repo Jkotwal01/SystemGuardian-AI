@@ -9,17 +9,17 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+from dataclasses import dataclass
 
 
 @dataclass
 class AIResponse:
     """Immutable response from any AI provider."""
 
-    content: str               # Raw text / JSON string returned by the model
-    provider: str              # e.g. "ollama", "gemini", "none"
-    model: str                 # e.g. "llama3.2", "gemini-1.5-flash"
+    content: str  # Raw text / JSON string returned by the model
+    provider: str  # e.g. "ollama", "gemini", "none"
+    model: str  # e.g. "llama3.2", "gemini-1.5-flash"
     tokens_used: int | None = None
     latency_ms: float = 0.0
     from_cache: bool = False
@@ -76,14 +76,14 @@ class BaseAIProvider(ABC):
     # ── Helper ────────────────────────────────────────────────────────────────
 
     @staticmethod
-    def _timed() -> "Timer":
+    def _timed() -> Timer:
         return Timer()
 
 
 class Timer:
     """Simple context-manager to measure elapsed ms."""
 
-    def __enter__(self) -> "Timer":
+    def __enter__(self) -> Timer:
         self._start = time.perf_counter()
         return self
 

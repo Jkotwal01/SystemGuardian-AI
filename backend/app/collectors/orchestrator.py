@@ -84,13 +84,15 @@ class CollectorOrchestrator:
             return []
 
         from app.core.settings_manager import SettingsManager
-        
+
         async def _run_one(cls: type[BaseCollector]) -> CollectorResult | None:
             module_name = str(cls.module).lower()
-            is_enabled = SettingsManager.get_instance().get_bool(f"module_{module_name}", default=True)
+            is_enabled = SettingsManager.get_instance().get_bool(
+                f"module_{module_name}", default=True
+            )
             if not is_enabled:
                 return None
-                
+
             async with self._session_factory() as session:
                 collector = cls(self._settings, session)
                 return await collector.run()
@@ -183,4 +185,3 @@ class CollectorOrchestrator:
         Returns CollectorResult list for logging/monitoring.
         """
         return await self.run_all()
-

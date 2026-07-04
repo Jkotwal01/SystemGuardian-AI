@@ -91,7 +91,9 @@ class HardwareCollector(BaseCollector, EventNormalizerMixin):
             memory_usage_percent=mem.percent,
             memory_total_bytes=mem.total,
             memory_available_bytes=mem.available,
-            cpu_temperature_celsius=temps.get("coretemp", [{"current": None}])[0]["current"] if temps and "coretemp" in temps else None,
+            cpu_temperature_celsius=temps.get("coretemp", [{"current": None}])[0]["current"]
+            if temps and "coretemp" in temps
+            else None,
             battery_percent=metrics.get("battery_percent"),
             is_plugged_in=metrics.get("battery_plugged"),
         )

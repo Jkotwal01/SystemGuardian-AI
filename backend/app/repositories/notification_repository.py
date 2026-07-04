@@ -1,6 +1,8 @@
-from sqlalchemy import select, desc, update
+from sqlalchemy import desc, select, update
+
 from app.core.repository import BaseRepository
 from app.models.notification import NotificationModel
+
 
 class NotificationRepository(BaseRepository[NotificationModel]):
     model = NotificationModel
@@ -14,7 +16,12 @@ class NotificationRepository(BaseRepository[NotificationModel]):
     async def get_unread_count(self) -> int:
         """Gets the total count of unread notifications."""
         from sqlalchemy import func
-        stmt = select(func.count()).select_from(NotificationModel).where(NotificationModel.is_read == False)
+
+        stmt = (
+            select(func.count())
+            .select_from(NotificationModel)
+            .where(not NotificationModel.is_read)
+        )
         result = await self._session.execute(stmt)
         return result.scalar() or 0
 
@@ -33,9 +40,7 @@ class NotificationRepository(BaseRepository[NotificationModel]):
     async def mark_all_as_read(self) -> None:
         """Marks all unread notifications as read."""
         stmt = (
-            update(NotificationModel)
-            .where(NotificationModel.is_read == False)
-            .values(is_read=True)
+            update(NotificationModel).where(not NotificationModel.is_read).values(is_read=True)
         )
         await self._session.execute(stmt)
         await self._session.commit()

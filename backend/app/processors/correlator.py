@@ -27,6 +27,7 @@ logger = structlog.get_logger()
 
 # ── Correlation Rules ─────────────────────────────────────────────────────────
 
+
 class CorrelationRule(ABC):
     """
     One correlation rule. Returns True if `event` and `candidate` are related.
@@ -92,14 +93,11 @@ class SameProcessRule(CorrelationRule):
     def matches(self, event: EventModel, candidate: EventModel) -> bool:
         proc = event.normalized_data.get("process_name")
         cand_proc = candidate.normalized_data.get("process_name")
-        return bool(
-            proc
-            and proc == cand_proc
-            and candidate.id != event.id
-        )
+        return bool(proc and proc == cand_proc and candidate.id != event.id)
 
 
 # ── Incident Builder ──────────────────────────────────────────────────────────
+
 
 def _build_incident_title(event: EventModel, related_count: int) -> str:
     category = event.category.value.capitalize()
@@ -115,6 +113,7 @@ def _build_incident_description(event: EventModel, related: list[EventModel]) ->
 
 
 # ── Event Correlator ──────────────────────────────────────────────────────────
+
 
 class EventCorrelator:
     """
@@ -156,9 +155,9 @@ class EventCorrelator:
         cutoff = dt.now(tz=UTC) - timedelta(minutes=self.WINDOW_MINUTES)
 
         candidates = [
-            e for e in recent_events
-            if e.occurred_at.replace(tzinfo=UTC) >= cutoff
-            and e.id != event.id
+            e
+            for e in recent_events
+            if e.occurred_at.replace(tzinfo=UTC) >= cutoff and e.id != event.id
         ]
 
         related = [c for c in candidates if self._is_related(event, c)]
@@ -169,6 +168,7 @@ class EventCorrelator:
         # Use the highest severity among all related events + the trigger event
         all_events = [event, *related]
         from app.processors.severity import SEVERITY_ORDER
+
         max_severity = max(all_events, key=lambda e: SEVERITY_ORDER[e.severity]).severity
 
         incident = IncidentModel(

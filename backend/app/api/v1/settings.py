@@ -2,10 +2,12 @@
 Settings API — read/write application configuration stored in the DB.
 Allows the frontend to persist AI provider settings, monitoring intervals, etc.
 """
+
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from fastapi import APIRouter, Depends, HTTPException
+
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,25 +20,25 @@ router = APIRouter(prefix="/settings", tags=["settings"])
 
 # ── Default settings (used when no DB record exists) ─────────────────────────
 DEFAULTS: dict[str, str] = {
-    "ai_provider":                 "ollama",
-    "ollama_base_url":             "http://localhost:11434",
-    "ollama_model":                "llama3.2",
-    "gemini_api_key":              "",
-    "metrics_interval_seconds":    "30",
+    "ai_provider": "ollama",
+    "ollama_base_url": "http://localhost:11434",
+    "ollama_model": "llama3.2",
+    "gemini_api_key": "",
+    "metrics_interval_seconds": "30",
     "event_poll_interval_seconds": "60",
-    "notification_min_severity":   "high",
+    "notification_min_severity": "high",
     "notification_cooldown_minutes": "15",
-    "event_retention_days":        "90",
-    "metric_retention_days":       "30",
-    "module_security":             "true",
-    "module_performance":          "true",
-    "module_hardware":             "true",
-    "module_network":              "true",
-    "module_storage":              "true",
-    "module_application":          "true",
-    "module_driver":               "true",
-    "module_power":                "true",
-    "onboarding_complete":         "false",
+    "event_retention_days": "90",
+    "metric_retention_days": "30",
+    "module_security": "true",
+    "module_performance": "true",
+    "module_hardware": "true",
+    "module_network": "true",
+    "module_storage": "true",
+    "module_application": "true",
+    "module_driver": "true",
+    "module_power": "true",
+    "onboarding_complete": "false",
 }
 
 
@@ -64,8 +66,7 @@ class SettingsPatch(BaseModel):
 @router.patch("")
 @router.patch("/")
 async def update_settings(
-    body: SettingsPatch,
-    db: AsyncSession = Depends(get_session)
+    body: SettingsPatch, db: AsyncSession = Depends(get_session)
 ) -> dict[str, str]:
     """Upsert one or more settings. Returns the full updated settings map."""
     repo = SettingRepository(db)
@@ -92,6 +93,7 @@ async def update_settings(
 async def test_ai_connection(db: AsyncSession = Depends(get_session)) -> dict[str, object]:
     """Test connectivity to the configured AI provider."""
     import httpx
+
     repo = SettingRepository(db)
 
     provider = (await repo.get_value("ai_provider")) or DEFAULTS["ai_provider"]

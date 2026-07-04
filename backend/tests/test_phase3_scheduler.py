@@ -55,9 +55,7 @@ class TestMonitoringScheduler:
                 "daily_report",
                 "cleanup",
             }
-            assert set(job_ids) == expected_jobs, (
-                f"Missing jobs: {expected_jobs - set(job_ids)}"
-            )
+            assert set(job_ids) == expected_jobs, f"Missing jobs: {expected_jobs - set(job_ids)}"
             assert len(job_ids) == MonitoringScheduler.TOTAL_JOBS
         finally:
             scheduler.shutdown()

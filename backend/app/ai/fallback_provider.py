@@ -10,7 +10,7 @@ the app never crashes or shows a raw error to the user.
 from __future__ import annotations
 
 import json
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import structlog
 
@@ -18,18 +18,20 @@ from app.ai.base import AIResponse, BaseAIProvider, GenerateOptions
 
 logger = structlog.get_logger()
 
-_DEGRADED_RESPONSE = json.dumps({
-    "what_happened": "AI analysis is temporarily unavailable.",
-    "why_it_happened": "Could not connect to any configured AI provider.",
-    "severity": "unknown",
-    "frequency_context": "Unable to determine.",
-    "risk_assessment": "Manual review recommended.",
-    "recommended_action": (
-        "Ensure Ollama is running locally, or add a GEMINI_API_KEY to your settings."
-    ),
-    "can_ignore": True,
-    "simple_summary": "AI is offline. Your system data is still being monitored normally.",
-})
+_DEGRADED_RESPONSE = json.dumps(
+    {
+        "what_happened": "AI analysis is temporarily unavailable.",
+        "why_it_happened": "Could not connect to any configured AI provider.",
+        "severity": "unknown",
+        "frequency_context": "Unable to determine.",
+        "risk_assessment": "Manual review recommended.",
+        "recommended_action": (
+            "Ensure Ollama is running locally, or add a GEMINI_API_KEY to your settings."
+        ),
+        "can_ignore": True,
+        "simple_summary": "AI is offline. Your system data is still being monitored normally.",
+    }
+)
 
 
 class FallbackAIProvider(BaseAIProvider):

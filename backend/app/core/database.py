@@ -37,7 +37,6 @@ class DatabaseManager:
             connect_args={"check_same_thread": False},
         )
 
-        import app.models  # ensure models are loaded
         async with cls._engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 

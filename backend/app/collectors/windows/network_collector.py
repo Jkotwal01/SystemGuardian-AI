@@ -7,6 +7,7 @@ and packet error/drop counts. Severity determined by connection anomalies.
 
 from __future__ import annotations
 
+import time
 from datetime import UTC, datetime
 from typing import Any
 
@@ -18,7 +19,6 @@ from app.collectors.normalizer import EventNormalizerMixin
 from app.collectors.registry import CollectorRegistry
 from app.domain.enums import EventCategory, Severity
 from app.models.event import EventModel
-import time
 from app.models.network_metric import NetworkMetricModel
 from app.repositories.metric_repository import NetworkMetricRepository
 

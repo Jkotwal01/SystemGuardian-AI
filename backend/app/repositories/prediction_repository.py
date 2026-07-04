@@ -1,7 +1,8 @@
-from datetime import datetime
-from sqlalchemy import select, desc
+from sqlalchemy import desc, select
+
 from app.core.repository import BaseRepository
 from app.models.prediction import PredictionModel
+
 
 class PredictionRepository(BaseRepository[PredictionModel]):
     model = PredictionModel

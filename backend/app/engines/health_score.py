@@ -32,12 +32,14 @@ logger = structlog.get_logger()
 
 # ── Score Factors ─────────────────────────────────────────────────────────────
 
+
 @dataclass
 class ScoreFactors:
     """
     Gathered metrics used as input to all sub-score computations.
     Each field maps directly to a measurable data point from the repositories.
     """
+
     critical_events_24h: int = 0
     high_events_24h: int = 0
     failed_logins_24h: int = 0
@@ -52,6 +54,7 @@ class ScoreFactors:
 
 
 # ── Engine ────────────────────────────────────────────────────────────────────
+
 
 class HealthScoreEngine:
     """
@@ -155,7 +158,7 @@ class HealthScoreEngine:
             high_events_24h=severity_counts.get(Severity.HIGH, 0),
             failed_logins_24h=failed_logins,
             security_events_24h=category_counts.get(EventCategory.SECURITY, 0),
-            avg_cpu_pct=0.0,    # Phase 5: populated from HardwareMetricModel
+            avg_cpu_pct=0.0,  # Phase 5: populated from HardwareMetricModel
             avg_ram_pct=0.0,
             app_crashes_24h=category_counts.get(EventCategory.APPLICATION, 0),
             hardware_warnings_24h=category_counts.get(EventCategory.HARDWARE, 0),

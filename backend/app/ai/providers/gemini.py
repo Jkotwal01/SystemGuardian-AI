@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import httpx
 import structlog
@@ -80,9 +80,7 @@ class GeminiProvider(BaseAIProvider):
         full_prompt = f"{system_prompt}\n\n{user_message}"
 
         payload = {
-            "contents": [
-                {"role": "user", "parts": [{"text": full_prompt}]}
-            ],
+            "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
             "generationConfig": {
                 "temperature": opts.temperature,
                 "maxOutputTokens": opts.max_tokens,
@@ -103,10 +101,7 @@ class GeminiProvider(BaseAIProvider):
 
         # Extract text from Gemini response structure
         content = (
-            data.get("candidates", [{}])[0]
-            .get("content", {})
-            .get("parts", [{}])[0]
-            .get("text", "")
+            data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
         )
         tokens_used = data.get("usageMetadata", {}).get("totalTokenCount")
 
@@ -142,9 +137,7 @@ class GeminiProvider(BaseAIProvider):
         full_prompt = f"{system_prompt}\n\n{user_message}"
 
         payload = {
-            "contents": [
-                {"role": "user", "parts": [{"text": full_prompt}]}
-            ],
+            "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
             "generationConfig": {
                 "temperature": opts.temperature,
                 "maxOutputTokens": opts.max_tokens,

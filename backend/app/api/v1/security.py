@@ -12,14 +12,13 @@ from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 from app.core.database import DatabaseManager
 from app.domain.enums import EventCategory, Severity
 from app.models.event import EventModel
 from app.repositories.event_repository import EventRepository
-from app.repositories.incident_repository import IncidentRepository
 from app.schemas.event import EventListResponse, EventRead
 
 router = APIRouter(prefix="/security", tags=["security"])
@@ -32,18 +31,20 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 # ── Response models ───────────────────────────────────────────────────────────
 
+
 class SecurityStatsResponse(BaseModel):
     total_security_events_24h: int
     failed_logins_24h: int
     successful_logins_24h: int
-    brute_force_attempts: int          # 5+ failed logins in 10-min windows
+    brute_force_attempts: int  # 5+ failed logins in 10-min windows
     critical_events_24h: int
     high_events_24h: int
-    unique_sources: int                # distinct event sources
-    threats_detected_24h: int          # events tagged as CRITICAL or HIGH in security category
+    unique_sources: int  # distinct event sources
+    threats_detected_24h: int  # events tagged as CRITICAL or HIGH in security category
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 async def _count_security_events(
     session: AsyncSession,
@@ -68,6 +69,7 @@ async def _count_security_events(
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
+
 
 @router.get("/stats", response_model=SecurityStatsResponse)
 async def get_security_stats(

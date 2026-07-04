@@ -34,7 +34,7 @@ async def test_unsubscribe(bus: EventBus):
 
     bus.subscribe("test_topic", handler)
     bus.unsubscribe("test_topic", handler)
-    
+
     await bus.publish("test_topic", {"key": "value"})
     assert len(received) == 0
 

@@ -12,6 +12,7 @@ class EventRepository(BaseRepository[EventModel]):
 
     async def get_by_id(self, id: str) -> EventModel | None:
         from sqlalchemy.orm import selectinload
+
         stmt = (
             select(self.model)
             .options(selectinload(self.model.ai_insight))
@@ -22,6 +23,7 @@ class EventRepository(BaseRepository[EventModel]):
 
     async def get_by_severity(self, severity: Severity, limit: int = 50) -> list[EventModel]:
         from sqlalchemy.orm import selectinload
+
         stmt = (
             select(self.model)
             .options(selectinload(self.model.ai_insight))
@@ -34,6 +36,7 @@ class EventRepository(BaseRepository[EventModel]):
 
     async def get_since(self, since: datetime) -> list[EventModel]:
         from sqlalchemy.orm import selectinload
+
         stmt = (
             select(self.model)
             .options(selectinload(self.model.ai_insight))
@@ -51,6 +54,7 @@ class EventRepository(BaseRepository[EventModel]):
     async def get_by_category(self, category: EventCategory, hours: int = 24) -> list[EventModel]:
         cutoff = datetime.now(tz=UTC) - timedelta(hours=hours)
         from sqlalchemy.orm import selectinload
+
         stmt = (
             select(self.model)
             .options(selectinload(self.model.ai_insight))
@@ -64,9 +68,7 @@ class EventRepository(BaseRepository[EventModel]):
 
     async def count_since(self, since: datetime, category: EventCategory | None = None) -> int:
         """Count events since a given datetime, optionally filtered by category."""
-        stmt = select(func.count()).select_from(self.model).where(
-            self.model.occurred_at >= since
-        )
+        stmt = select(func.count()).select_from(self.model).where(self.model.occurred_at >= since)
         if category is not None:
             stmt = stmt.where(self.model.category == category)
         result = await self._session.execute(stmt)

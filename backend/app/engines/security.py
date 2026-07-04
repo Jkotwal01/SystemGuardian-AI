@@ -27,7 +27,7 @@ logger = structlog.get_logger()
 
 # ── Threat Definitions ────────────────────────────────────────────────────────
 
-BRUTE_FORCE_THRESHOLD = 5          # failed logins within window
+BRUTE_FORCE_THRESHOLD = 5  # failed logins within window
 BRUTE_FORCE_WINDOW_MINUTES = 10
 
 # Windows Security event IDs that are always immediate threats
@@ -40,6 +40,7 @@ IMMEDIATE_THREAT_EVENT_IDS = {
 
 
 # ── Threat payload ────────────────────────────────────────────────────────────
+
 
 class ThreatDetected:
     """Payload published on Events.THREAT_DETECTED."""
@@ -58,6 +59,7 @@ class ThreatDetected:
 
 
 # ── Security Engine ───────────────────────────────────────────────────────────
+
 
 class SecurityEngine:
     """
@@ -91,12 +93,16 @@ class SecurityEngine:
                 "4698": "A new scheduled task was created — possible persistence",
                 "4719": "System audit policy was changed",
             }
-            threats.append(ThreatDetected(
-                threat_type="immediate_threat",
-                severity=event.severity,
-                trigger_event=event,
-                description=threat_descriptions.get(event.source_id or "", "Suspicious activity"),
-            ))
+            threats.append(
+                ThreatDetected(
+                    threat_type="immediate_threat",
+                    severity=event.severity,
+                    trigger_event=event,
+                    description=threat_descriptions.get(
+                        event.source_id or "", "Suspicious activity"
+                    ),
+                )
+            )
 
         # Pattern 2: Brute-force detection (failed logins)
         if event.source_id == "4625":  # Failed login
@@ -122,8 +128,7 @@ class SecurityEngine:
             repo = EventRepository(session)
             recent = await repo.get_since_minutes(minutes=BRUTE_FORCE_WINDOW_MINUTES)
             failed_logins = [
-                e for e in recent
-                if e.source_id == "4625" and e.category == EventCategory.SECURITY
+                e for e in recent if e.source_id == "4625" and e.category == EventCategory.SECURITY
             ]
 
             if len(failed_logins) >= BRUTE_FORCE_THRESHOLD:

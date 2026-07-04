@@ -1,25 +1,30 @@
-from datetime import datetime, timedelta, timezone
 from collections.abc import AsyncGenerator
+from datetime import UTC, datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import DatabaseManager
-from app.repositories.report_repository import ReportRepository
+from app.domain.enums import ReportType
 from app.reports.builder import DailyReportBuilder, WeeklyReportBuilder
 from app.reports.exporters.factory import ExporterFactory
-from app.domain.enums import ReportType
+from app.repositories.report_repository import ReportRepository
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with DatabaseManager.get_session_factory()() as session:
         yield session
 
+
 def utcnow() -> datetime:
-    return datetime.now(tz=timezone.utc)
+    return datetime.now(tz=UTC)
 
 
 # ── Fixed-path routes first (must come before /{report_id}) ──────────────────
+
 
 @router.get("")
 @router.get("/")
@@ -27,21 +32,24 @@ async def get_reports(limit: int = 20, db: AsyncSession = Depends(get_session)):
     """List historical reports, newest first."""
     repo = ReportRepository(db)
     reports = await repo.get_recent(limit=limit)
-    return [{
-        "id": r.id,
-        "report_type": r.report_type,
-        "title": r.title,
-        "period_start": r.period_start,
-        "period_end": r.period_end,
-        "generated_at": r.generated_at
-    } for r in reports]
+    return [
+        {
+            "id": r.id,
+            "report_type": r.report_type,
+            "title": r.title,
+            "period_start": r.period_start,
+            "period_end": r.period_end,
+            "generated_at": r.generated_at,
+        }
+        for r in reports
+    ]
 
 
 @router.post("/generate")
 async def generate_report(
     request: Request,
     report_type: ReportType = Query(ReportType.DAILY),
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
 ):
     """Manually trigger report generation (with AI analysis)."""
     end = utcnow()
@@ -66,11 +74,9 @@ async def generate_report(
 
 # ── Parameterized routes (/{report_id}) ──────────────────────────────────────
 
+
 @router.get("/{report_id}/view", response_class=Response)
-async def view_report_html(
-    report_id: str,
-    db: AsyncSession = Depends(get_session)
-):
+async def view_report_html(report_id: str, db: AsyncSession = Depends(get_session)):
     """Render the report as HTML inline (same as HTML export but no download header)."""
     repo = ReportRepository(db)
     report = await repo.get_by_id(report_id)
@@ -84,7 +90,7 @@ async def view_report_html(
         "period_start": report.period_start.isoformat(),
         "period_end": report.period_end.isoformat(),
         "generated_at": report.generated_at.isoformat(),
-        "content": report.content
+        "content": report.content,
     }
     html_content = exporter.export(export_data)
     if isinstance(html_content, str):
@@ -94,9 +100,7 @@ async def view_report_html(
 
 @router.get("/{report_id}/export")
 async def export_report(
-    report_id: str,
-    format: str = Query("html"),
-    db: AsyncSession = Depends(get_session)
+    report_id: str, format: str = Query("html"), db: AsyncSession = Depends(get_session)
 ):
     """Export a report as a downloadable file (html or json)."""
     repo = ReportRepository(db)
@@ -115,7 +119,7 @@ async def export_report(
         "period_start": report.period_start.isoformat(),
         "period_end": report.period_end.isoformat(),
         "generated_at": report.generated_at.isoformat(),
-        "content": report.content
+        "content": report.content,
     }
 
     content = exporter.export(export_data)
@@ -143,7 +147,7 @@ async def get_report(report_id: str, db: AsyncSession = Depends(get_session)):
         "period_start": report.period_start.isoformat(),
         "period_end": report.period_end.isoformat(),
         "generated_at": report.generated_at.isoformat(),
-        "content": report.content
+        "content": report.content,
     }
 
 

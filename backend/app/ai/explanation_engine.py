@@ -12,8 +12,9 @@ Design:
 from __future__ import annotations
 
 import json
-import structlog
 from datetime import UTC, datetime
+
+import structlog
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.ai.base import GenerateOptions
@@ -23,7 +24,6 @@ from app.domain.enums import AIProvider, Severity
 from app.models.ai_insight import AIInsightModel
 from app.models.event import EventModel
 from app.repositories.ai_insight_repository import AIInsightRepository
-from app.repositories.event_repository import EventRepository
 
 logger = structlog.get_logger()
 
@@ -175,7 +175,9 @@ class ExplanationEngine:
         """
         try:
             data = json.loads(content)
-            summary = data.get("simple_summary") or data.get("what_happened", "AI analysis complete.")
+            summary = data.get("simple_summary") or data.get(
+                "what_happened", "AI analysis complete."
+            )
             explanation = (
                 f"{data.get('what_happened', '')}\n\n"
                 f"Why: {data.get('why_it_happened', '')}\n\n"

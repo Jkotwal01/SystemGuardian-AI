@@ -104,7 +104,18 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ANN", "S"]
-"app/api/*" = ["B008"]
+"app/api/*" = ["B008", "ANN"]
+"app/reports/exporters/factory.py" = ["E501"]
+"app/collectors/windows/*.py" = ["E501"]
+"app/core/scheduler.py" = ["E501"]
+"app/engines/prediction_engine.py" = ["N806"]
+"app/engines/predictors/*.py" = ["E501"]
+"app/notifications/manager.py" = ["ANN401"]
+"app/reports/builder.py" = ["E501", "ANN001"]
+"app/api/websocket.py" = ["ANN401"]
+"app/ai/assistant.py" = ["E501"]
+"app/ai/prompts.py" = ["E501"]
+"app/api/v1/reports.py" = ["E501", "B904"]
 
 # ─── mypy ─────────────────────────────────────────────────────────────────────
 [tool.mypy]

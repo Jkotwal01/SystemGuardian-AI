@@ -71,6 +71,7 @@ async def update_incident(
 
     if body.status in {IncidentStatus.RESOLVED, IncidentStatus.DISMISSED}:
         from datetime import datetime
+
         incident.resolved_at = datetime.now(tz=UTC)
 
     await repo.save(incident)

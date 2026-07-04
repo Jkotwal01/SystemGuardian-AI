@@ -7,6 +7,7 @@ Flags WARNING when any disk exceeds 80% and CRITICAL at 95%.
 
 from __future__ import annotations
 
+import time
 from datetime import UTC, datetime
 from typing import Any
 
@@ -17,9 +18,8 @@ from app.collectors.base import BaseCollector
 from app.collectors.normalizer import EventNormalizerMixin
 from app.collectors.registry import CollectorRegistry
 from app.domain.enums import EventCategory, Severity
-from app.models.event import EventModel
-import time
 from app.models.disk_metric import DiskMetricModel
+from app.models.event import EventModel
 from app.repositories.metric_repository import DiskMetricRepository
 
 logger = structlog.get_logger()
@@ -57,7 +57,7 @@ class StorageCollector(BaseCollector, EventNormalizerMixin):
             if sys_io:
                 prev_sys = self.__class__._last_io.get("sys", sys_io)
                 self.__class__._last_io["sys"] = sys_io
-                
+
                 # Approximate per-disk IO by dividing system IO by number of partitions
                 # This is a limitation of psutil on Windows (disk_io_counters(perdisk=True) gives PhysicalDriveX, not C:)
                 part_count = max(1, len(psutil.disk_partitions(all=False)))
@@ -134,12 +134,12 @@ class StorageCollector(BaseCollector, EventNormalizerMixin):
         warn_parts = [p for p in partitions if p["percent_used"] >= DISK_WARN_PERCENT]
 
         if critical_parts:
-            dev = critical_parts[0]['device']
-            pct = critical_parts[0]['percent_used']
+            dev = critical_parts[0]["device"]
+            pct = critical_parts[0]["percent_used"]
             title = f"Storage CRITICAL — {dev} at {pct:.0f}%"
         elif warn_parts:
-            dev = warn_parts[0]['device']
-            pct = warn_parts[0]['percent_used']
+            dev = warn_parts[0]["device"]
+            pct = warn_parts[0]["percent_used"]
             title = f"Storage Warning — {dev} at {pct:.0f}%"
         else:
             avg = sum(p["percent_used"] for p in partitions) / max(len(partitions), 1)

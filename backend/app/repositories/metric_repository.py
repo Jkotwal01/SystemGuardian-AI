@@ -16,20 +16,12 @@ class HardwareMetricRepository(BaseRepository[HardwareMetricModel]):
     model = HardwareMetricModel
 
     async def get_latest(self) -> HardwareMetricModel | None:
-        stmt = (
-            select(self.model)
-            .order_by(desc(self.model.timestamp))
-            .limit(1)
-        )
+        stmt = select(self.model).order_by(desc(self.model.timestamp)).limit(1)
         result = await self._session.execute(stmt)
         return result.scalars().first()
 
     async def get_recent(self, limit: int = 60) -> list[HardwareMetricModel]:
-        stmt = (
-            select(self.model)
-            .order_by(desc(self.model.timestamp))
-            .limit(limit)
-        )
+        stmt = select(self.model).order_by(desc(self.model.timestamp)).limit(limit)
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
@@ -41,31 +33,21 @@ class DiskMetricRepository(BaseRepository[DiskMetricModel]):
         """Return the most recent row per mountpoint."""
         from sqlalchemy import func
         from sqlalchemy.orm import aliased
-        
-        sub = (
-            select(
-                self.model,
-                func.row_number()
-                .over(
-                    partition_by=self.model.mountpoint,
-                    order_by=self.model.timestamp.desc()
-                )
-                .label("rn"),
-            )
-            .subquery()
-        )
+
+        sub = select(
+            self.model,
+            func.row_number()
+            .over(partition_by=self.model.mountpoint, order_by=self.model.timestamp.desc())
+            .label("rn"),
+        ).subquery()
         model_alias = aliased(self.model, sub)
         stmt = select(model_alias).where(sub.c.rn == 1)
-        
+
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
     async def get_recent(self, limit: int = 60) -> list[DiskMetricModel]:
-        stmt = (
-            select(self.model)
-            .order_by(desc(self.model.timestamp))
-            .limit(limit)
-        )
+        stmt = select(self.model).order_by(desc(self.model.timestamp)).limit(limit)
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
@@ -78,29 +60,19 @@ class NetworkMetricRepository(BaseRepository[NetworkMetricModel]):
         from sqlalchemy import func
         from sqlalchemy.orm import aliased
 
-        sub = (
-            select(
-                self.model,
-                func.row_number()
-                .over(
-                    partition_by=self.model.interface,
-                    order_by=self.model.timestamp.desc()
-                )
-                .label("rn"),
-            )
-            .subquery()
-        )
+        sub = select(
+            self.model,
+            func.row_number()
+            .over(partition_by=self.model.interface, order_by=self.model.timestamp.desc())
+            .label("rn"),
+        ).subquery()
         model_alias = aliased(self.model, sub)
         stmt = select(model_alias).where(sub.c.rn == 1)
-        
+
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
     async def get_recent(self, limit: int = 60) -> list[NetworkMetricModel]:
-        stmt = (
-            select(self.model)
-            .order_by(desc(self.model.timestamp))
-            .limit(limit)
-        )
+        stmt = select(self.model).order_by(desc(self.model.timestamp)).limit(limit)
         result = await self._session.execute(stmt)
         return list(result.scalars().all())

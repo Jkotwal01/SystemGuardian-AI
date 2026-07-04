@@ -38,8 +38,10 @@ _AI_SEVERITIES = {Severity.HIGH, Severity.CRITICAL}
 
 # ── Event type constants ───────────────────────────────────────────────────────
 
+
 class Events:
     """Bus topic constants. Import these everywhere — no raw strings."""
+
     EVENT_PROCESSED = "event.processed"
     INCIDENT_CREATED = "incident.created"
     INCIDENT_UPDATED = "incident.updated"
@@ -50,6 +52,7 @@ class Events:
 
 
 # ── Pipeline ──────────────────────────────────────────────────────────────────
+
 
 class EventProcessingPipeline:
     """
@@ -67,7 +70,7 @@ class EventProcessingPipeline:
         enricher: EventEnricher,
         correlator: EventCorrelator,
         event_bus: EventBus,
-        explanation_engine: "ExplanationEngine | None" = None,
+        explanation_engine: ExplanationEngine | None = None,
     ) -> None:
         self._classifier = classifier
         self._enricher = enricher
@@ -119,9 +122,7 @@ class EventProcessingPipeline:
         )
 
         # Step 5: Correlate → may create an Incident
-        incident: IncidentModel | None = await self._correlator.correlate(
-            event, recent_events
-        )
+        incident: IncidentModel | None = await self._correlator.correlate(event, recent_events)
         if incident is not None:
             await incident_repo.save(incident)
             await self._bus.publish(Events.INCIDENT_CREATED, incident)
@@ -154,7 +155,7 @@ class EventProcessingPipeline:
 
 def create_default_pipeline(
     event_bus: EventBus,
-    explanation_engine: "ExplanationEngine | None" = None,
+    explanation_engine: ExplanationEngine | None = None,
 ) -> EventProcessingPipeline:
     """
     Factory function. Creates the production pipeline with default components.

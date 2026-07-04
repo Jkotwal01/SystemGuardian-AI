@@ -1,16 +1,20 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any
-from sqlalchemy.ext.asyncio import AsyncSession
 
 import structlog
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.report import ReportModel
 from app.domain.enums import ReportType
+from app.models.report import ReportModel
+from app.repositories.event_repository import EventRepository
 from app.repositories.health_score_repository import HealthScoreRepository
 from app.repositories.incident_repository import IncidentRepository
-from app.repositories.event_repository import EventRepository
-from app.repositories.metric_repository import HardwareMetricRepository, DiskMetricRepository, NetworkMetricRepository
+from app.repositories.metric_repository import (
+    DiskMetricRepository,
+    HardwareMetricRepository,
+    NetworkMetricRepository,
+)
 from app.repositories.prediction_repository import PredictionRepository
 
 logger = structlog.get_logger()
@@ -19,7 +23,7 @@ logger = structlog.get_logger()
 class ReportBuilder(ABC):
     """Base for all report types. Uses LLM to generate the written analysis."""
 
-    def __init__(self, session: AsyncSession, ai_provider=None):
+    def __init__(self, session: AsyncSession, ai_provider=None) -> None:
         self._session = session
         self._ai_provider = ai_provider
 
@@ -59,7 +63,7 @@ class ReportBuilder(ABC):
             title=f"{self.report_type.value.capitalize()} System Report",
             period_start=period_start,
             period_end=period_end,
-            content=content
+            content=content,
         )
 
     async def _generate_ai_analysis(
@@ -69,8 +73,9 @@ class ReportBuilder(ABC):
         if not self._ai_provider:
             return {"summary": "AI analysis unavailable (no provider configured)."}
 
-        from app.ai.base import GenerateOptions
         import json
+
+        from app.ai.base import GenerateOptions
 
         # Format key data for the prompt
         hw = raw_data.get("hardware", {})
@@ -191,16 +196,25 @@ Guidelines:
             "ram_avg": round(ram_avg, 1),
             "cpu_max": round(cpu_max, 1),
             "ram_max": round(ram_max, 1),
-            "memory_total_gb": round(latest.memory_total_bytes / 1024 ** 3, 2) if latest.memory_total_bytes else None,
-            "memory_used_gb": round((latest.memory_total_bytes - latest.memory_available_bytes) / 1024 ** 3, 2)
-            if (latest.memory_total_bytes and latest.memory_available_bytes) else None,
-            "memory_available_gb": round(latest.memory_available_bytes / 1024 ** 3, 2) if latest.memory_available_bytes else None,
+            "memory_total_gb": round(latest.memory_total_bytes / 1024**3, 2)
+            if latest.memory_total_bytes
+            else None,
+            "memory_used_gb": round(
+                (latest.memory_total_bytes - latest.memory_available_bytes) / 1024**3, 2
+            )
+            if (latest.memory_total_bytes and latest.memory_available_bytes)
+            else None,
+            "memory_available_gb": round(latest.memory_available_bytes / 1024**3, 2)
+            if latest.memory_available_bytes
+            else None,
             "battery_percent": latest.battery_percent,
             "is_plugged_in": latest.is_plugged_in,
             "latest": {
                 "cpu": round(latest.cpu_usage_percent, 1),
                 "ram": round(latest.memory_usage_percent, 1),
-                "temp": round(latest.cpu_temperature_celsius, 1) if latest.cpu_temperature_celsius else None,
+                "temp": round(latest.cpu_temperature_celsius, 1)
+                if latest.cpu_temperature_celsius
+                else None,
             },
             "data_points": len(history),
         }
@@ -212,12 +226,12 @@ Guidelines:
             {
                 "device": d.device,
                 "mountpoint": d.mountpoint,
-                "total_gb": round(d.total_bytes / 1024 ** 3, 2),
-                "used_gb": round(d.used_bytes / 1024 ** 3, 2),
-                "free_gb": round(d.free_bytes / 1024 ** 3, 2),
+                "total_gb": round(d.total_bytes / 1024**3, 2),
+                "used_gb": round(d.used_bytes / 1024**3, 2),
+                "free_gb": round(d.free_bytes / 1024**3, 2),
                 "usage_percent": round(d.usage_percent, 1),
-                "read_mb_s": round(d.read_bytes_per_sec / 1024 ** 2, 2),
-                "write_mb_s": round(d.write_bytes_per_sec / 1024 ** 2, 2),
+                "read_mb_s": round(d.read_bytes_per_sec / 1024**2, 2),
+                "write_mb_s": round(d.write_bytes_per_sec / 1024**2, 2),
             }
             for d in disks
         ]
@@ -228,14 +242,16 @@ Guidelines:
         return [
             {
                 "interface": n.interface,
-                "recv_mb_s": round(n.bytes_recv_per_sec / 1024 ** 2, 3),
-                "sent_mb_s": round(n.bytes_sent_per_sec / 1024 ** 2, 3),
+                "recv_mb_s": round(n.bytes_recv_per_sec / 1024**2, 3),
+                "sent_mb_s": round(n.bytes_sent_per_sec / 1024**2, 3),
             }
             for n in interfaces
             if n.bytes_recv_per_sec > 0 or n.bytes_sent_per_sec > 0
         ]
 
-    async def build_predictions_section(self, start: datetime, end: datetime) -> list[dict[str, Any]]:
+    async def build_predictions_section(
+        self, start: datetime, end: datetime
+    ) -> list[dict[str, Any]]:
         repo = PredictionRepository(self._session)
         predictions = await repo.get_active_predictions(min_probability=0.1)
         return [

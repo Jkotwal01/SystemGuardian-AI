@@ -1,6 +1,8 @@
-from sqlalchemy import select, desc
+from sqlalchemy import desc, select
+
 from app.core.repository import BaseRepository
 from app.models.report import ReportModel
+
 
 class ReportRepository(BaseRepository[ReportModel]):
     model = ReportModel

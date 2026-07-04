@@ -65,14 +65,14 @@ class HTMLExporter(BaseExporter):
             bar_color = "#4ade80" if usage < 70 else "#fbbf24" if usage < 85 else "#f87171"
             storage_rows += f"""
             <tr>
-                <td>{d.get('device', '')}</td>
-                <td>{d.get('mountpoint', '')}</td>
-                <td>{d.get('total_gb', 0):.1f} GB</td>
-                <td>{d.get('used_gb', 0):.1f} GB</td>
-                <td>{d.get('free_gb', 0):.1f} GB</td>
+                <td>{d.get("device", "")}</td>
+                <td>{d.get("mountpoint", "")}</td>
+                <td>{d.get("total_gb", 0):.1f} GB</td>
+                <td>{d.get("used_gb", 0):.1f} GB</td>
+                <td>{d.get("free_gb", 0):.1f} GB</td>
                 <td>
                     <div class="bar-wrap">
-                        <div class="bar" style="width:{min(usage,100):.1f}%;background:{bar_color}"></div>
+                        <div class="bar" style="width:{min(usage, 100):.1f}%;background:{bar_color}"></div>
                     </div>
                     <span class="pct">{usage:.1f}%</span>
                 </td>
@@ -84,7 +84,9 @@ class HTMLExporter(BaseExporter):
             for p in predictions:
                 risk = round((p.get("failure_probability", 0) or 0) * 100)
                 sev = p.get("severity", "low")
-                sev_color = "#f87171" if sev == "critical" else "#fbbf24" if sev == "high" else "#94a3b8"
+                sev_color = (
+                    "#f87171" if sev == "critical" else "#fbbf24" if sev == "high" else "#94a3b8"
+                )
                 ttf = p.get("predicted_ttf_hours")
                 ttf_str = f" &bull; ~{ttf:.0f}h until failure" if ttf else ""
                 pred_html += f"""
@@ -103,13 +105,15 @@ class HTMLExporter(BaseExporter):
 
         # ── Incident Badges ───────────────────────────────────────────────────
         recent_incidents_html = ""
-        for i in (incidents.get("recent_titles") or []):
+        for i in incidents.get("recent_titles") or []:
             sev = i.get("severity", "low")
-            sev_color = "#f87171" if sev == "critical" else "#fbbf24" if sev == "high" else "#94a3b8"
+            sev_color = (
+                "#f87171" if sev == "critical" else "#fbbf24" if sev == "high" else "#94a3b8"
+            )
             recent_incidents_html += f"""
             <div class="incident-row">
                 <span class="dot" style="background:{sev_color}"></span>
-                <span class="incident-title">{i.get('title', '')}</span>
+                <span class="incident-title">{i.get("title", "")}</span>
                 <span class="severity-badge" style="background:{sev_color}20;color:{sev_color};border:1px solid {sev_color}40">{sev.upper()}</span>
             </div>"""
 
@@ -123,9 +127,9 @@ class HTMLExporter(BaseExporter):
         for n in network:
             network_rows += f"""
             <tr>
-                <td>{n.get('interface', '')}</td>
-                <td>{n.get('recv_mb_s', 0):.3f} MB/s</td>
-                <td>{n.get('sent_mb_s', 0):.3f} MB/s</td>
+                <td>{n.get("interface", "")}</td>
+                <td>{n.get("recv_mb_s", 0):.3f} MB/s</td>
+                <td>{n.get("sent_mb_s", 0):.3f} MB/s</td>
             </tr>"""
 
         html = f"""<!DOCTYPE html>
@@ -272,7 +276,9 @@ class HTMLExporter(BaseExporter):
 
   <!-- AI ANALYSIS -->
   <div class="ai-section">
-    <div class="section-title">🤖 AI Diagnostic Analysis <span class="ai-badge">{ai_provider} / {ai_model}</span></div>
+    <div class="section-title">🤖 AI Diagnostic Analysis <span class="ai-badge">{ai_provider} / {
+            ai_model
+        }</span></div>
     <div class="ai-content">{ai_html}</div>
   </div>
 
@@ -283,24 +289,48 @@ class HTMLExporter(BaseExporter):
       <div class="health-score">
         <div class="score-number">{score}</div>
         <div class="score-label">/ 100 Average Health Score</div>
-        <span class="score-meta">Latest: {health.get('latest_score', score)} &nbsp;|&nbsp; {health.get('data_points', 0)} data points</span>
+        <span class="score-meta">Latest: {health.get("latest_score", score)} &nbsp;|&nbsp; {
+            health.get("data_points", 0)
+        } data points</span>
       </div>
     </div>
     <div class="section">
       <div class="section-title">💻 Hardware Performance</div>
       <div class="metric-row">
-        <div class="metric-header"><span>CPU Usage (Avg)</span><span>{hardware.get('cpu_avg', 0):.1f}% &nbsp; Peak: {hardware.get('cpu_max', 0):.1f}%</span></div>
-        <div class="bar-track"><div class="bar-fill cpu-bar" style="width:{min(hardware.get('cpu_avg',0),100):.1f}%"></div></div>
+        <div class="metric-header"><span>CPU Usage (Avg)</span><span>{
+            hardware.get("cpu_avg", 0):.1f}% &nbsp; Peak: {
+            hardware.get("cpu_max", 0):.1f}%</span></div>
+        <div class="bar-track"><div class="bar-fill cpu-bar" style="width:{
+            min(hardware.get("cpu_avg", 0), 100):.1f}%"></div></div>
       </div>
       <div class="metric-row">
-        <div class="metric-header"><span>RAM Usage (Avg)</span><span>{hardware.get('ram_avg', 0):.1f}% &nbsp; Peak: {hardware.get('ram_max', 0):.1f}%</span></div>
-        <div class="bar-track"><div class="bar-fill ram-bar" style="width:{min(hardware.get('ram_avg',0),100):.1f}%"></div></div>
+        <div class="metric-header"><span>RAM Usage (Avg)</span><span>{
+            hardware.get("ram_avg", 0):.1f}% &nbsp; Peak: {
+            hardware.get("ram_max", 0):.1f}%</span></div>
+        <div class="bar-track"><div class="bar-fill ram-bar" style="width:{
+            min(hardware.get("ram_avg", 0), 100):.1f}%"></div></div>
       </div>
       <div class="meta-row">
-        {f'<div class="meta-item">🧠 Total RAM: <strong>{hardware.get("memory_total_gb", 0):.1f} GB</strong></div>' if hardware.get('memory_total_gb') else ''}
-        {f'<div class="meta-item">📋 Used RAM: <strong>{hardware.get("memory_used_gb", 0):.1f} GB</strong></div>' if hardware.get('memory_used_gb') else ''}
-        {f'<div class="meta-item">🌡️ CPU Temp: <strong>{hardware.get("latest", {}).get("temp")}°C</strong></div>' if hardware.get('latest', {}).get('temp') else ''}
-        {f'<div class="meta-item">🔋 Battery: <strong>{hardware.get("battery_percent")}%</strong> {"🔌 Plugged In" if hardware.get("is_plugged_in") else "🔋 On Battery"}</div>' if hardware.get('battery_percent') is not None else ''}
+        {
+            f'<div class="meta-item">🧠 Total RAM: <strong>{hardware.get("memory_total_gb", 0):.1f} GB</strong></div>'
+            if hardware.get("memory_total_gb")
+            else ""
+        }
+        {
+            f'<div class="meta-item">📋 Used RAM: <strong>{hardware.get("memory_used_gb", 0):.1f} GB</strong></div>'
+            if hardware.get("memory_used_gb")
+            else ""
+        }
+        {
+            f'<div class="meta-item">🌡️ CPU Temp: <strong>{hardware.get("latest", {}).get("temp")}°C</strong></div>'
+            if hardware.get("latest", {}).get("temp")
+            else ""
+        }
+        {
+            f'<div class="meta-item">🔋 Battery: <strong>{hardware.get("battery_percent")}%</strong> {"🔌 Plugged In" if hardware.get("is_plugged_in") else "🔋 On Battery"}</div>'
+            if hardware.get("battery_percent") is not None
+            else ""
+        }
       </div>
     </div>
   </div>
@@ -310,38 +340,58 @@ class HTMLExporter(BaseExporter):
     <div class="section">
       <div class="section-title">🚨 Incidents Summary</div>
       <div class="stat-grid" style="margin-bottom:20px">
-        <div class="stat-box"><div class="stat-value">{incidents.get('total', 0)}</div><div class="stat-label">Total</div></div>
-        <div class="stat-box stat-critical"><div class="stat-value">{incidents.get('critical', 0)}</div><div class="stat-label">Critical</div></div>
-        <div class="stat-box"><div class="stat-value" style="color:#fbbf24">{incidents.get('high', 0)}</div><div class="stat-label">High</div></div>
-        <div class="stat-box"><div class="stat-value" style="color:#94a3b8">{incidents.get('medium', 0)}</div><div class="stat-label">Medium</div></div>
+        <div class="stat-box"><div class="stat-value">{
+            incidents.get("total", 0)
+        }</div><div class="stat-label">Total</div></div>
+        <div class="stat-box stat-critical"><div class="stat-value">{
+            incidents.get("critical", 0)
+        }</div><div class="stat-label">Critical</div></div>
+        <div class="stat-box"><div class="stat-value" style="color:#fbbf24">{
+            incidents.get("high", 0)
+        }</div><div class="stat-label">High</div></div>
+        <div class="stat-box"><div class="stat-value" style="color:#94a3b8">{
+            incidents.get("medium", 0)
+        }</div><div class="stat-label">Medium</div></div>
       </div>
-      {f'<div class="section-title" style="margin-top:8px">Recent Incidents</div>{recent_incidents_html}' if recent_incidents_html else ''}
+      {
+            f'<div class="section-title" style="margin-top:8px">Recent Incidents</div>{recent_incidents_html}'
+            if recent_incidents_html
+            else ""
+        }
     </div>
     <div class="section">
       <div class="section-title">📈 Event Analytics</div>
-      <div class="event-total">{events.get('total_today', 0)}</div>
+      <div class="event-total">{events.get("total_today", 0)}</div>
       <div style="color:#64748b;font-size:0.85rem;margin-bottom:16px">Total events logged</div>
       <div>{event_badges}</div>
     </div>
   </div>
 
   <!-- STORAGE -->
-  {f'''<div class="section">
+  {
+            f'''<div class="section">
     <div class="section-title">💾 Storage — Drive Analysis</div>
     <table>
       <thead><tr><th>Device</th><th>Mount</th><th>Total</th><th>Used</th><th>Free</th><th>Usage</th></tr></thead>
       <tbody>{storage_rows}</tbody>
     </table>
-  </div>''' if storage else ''}
+  </div>'''
+            if storage
+            else ""
+        }
 
   <!-- NETWORK -->
-  {f'''<div class="section">
+  {
+            f'''<div class="section">
     <div class="section-title">🌐 Network Interfaces</div>
     <table>
       <thead><tr><th>Interface</th><th>Download</th><th>Upload</th></tr></thead>
       <tbody>{network_rows}</tbody>
     </table>
-  </div>''' if network else ''}
+  </div>'''
+            if network
+            else ""
+        }
 
   <!-- AI PREDICTIONS -->
   <div class="section">
@@ -349,7 +399,9 @@ class HTMLExporter(BaseExporter):
     {pred_html}
   </div>
 
-  <footer>SystemGuardian AI &bull; Generated {generated_at} &bull; Do not share this report publicly</footer>
+  <footer>SystemGuardian AI &bull; Generated {
+            generated_at
+        } &bull; Do not share this report publicly</footer>
 </div>
 </body>
 </html>"""
@@ -358,31 +410,44 @@ class HTMLExporter(BaseExporter):
     def _markdown_to_html(self, text: str) -> str:
         """Minimal markdown → HTML converter for the AI analysis text."""
         import re
+
         lines = text.split("\n")
         result = []
         in_ul = False
         for line in lines:
             # Headers
             if line.startswith("### "):
-                if in_ul: result.append("</ul>"); in_ul = False
+                if in_ul:
+                    result.append("</ul>")
+                    in_ul = False
                 result.append(f"<h3>{line[4:].strip()}</h3>")
             elif line.startswith("## "):
-                if in_ul: result.append("</ul>"); in_ul = False
+                if in_ul:
+                    result.append("</ul>")
+                    in_ul = False
                 result.append(f"<h2>{line[3:].strip()}</h2>")
             elif line.startswith("# "):
-                if in_ul: result.append("</ul>"); in_ul = False
+                if in_ul:
+                    result.append("</ul>")
+                    in_ul = False
                 result.append(f"<h1>{line[2:].strip()}</h1>")
             # Bullet list items
             elif line.startswith("- ") or line.startswith("* "):
-                if not in_ul: result.append("<ul>"); in_ul = True
+                if not in_ul:
+                    result.append("<ul>")
+                    in_ul = True
                 item = line[2:].strip()
                 item = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", item)
                 result.append(f"<li>{item}</li>")
             elif line.strip() == "":
-                if in_ul: result.append("</ul>"); in_ul = False
+                if in_ul:
+                    result.append("</ul>")
+                    in_ul = False
                 result.append("")
             else:
-                if in_ul: result.append("</ul>"); in_ul = False
+                if in_ul:
+                    result.append("</ul>")
+                    in_ul = False
                 p = line.strip()
                 p = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", p)
                 p = re.sub(r"`(.+?)`", r"<code>\1</code>", p)
@@ -407,5 +472,7 @@ class ExporterFactory:
     @classmethod
     def create(cls, format_type: str) -> BaseExporter:
         if format_type not in cls._exporters:
-            raise ValueError(f"Unsupported format: {format_type}. Supported: {list(cls._exporters.keys())}")
+            raise ValueError(
+                f"Unsupported format: {format_type}. Supported: {list(cls._exporters.keys())}"
+            )
         return cls._exporters[format_type]()

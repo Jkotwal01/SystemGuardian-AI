@@ -27,9 +27,7 @@ async def test_network_collector_collects_metrics(collector: NetworkCollector):
             dropout=0,
         )
     }
-    mock_stats = {
-        "Ethernet": MagicMock(isup=True, speed=1000, duplex=2, mtu=1500)
-    }
+    mock_stats = {"Ethernet": MagicMock(isup=True, speed=1000, duplex=2, mtu=1500)}
 
     net_io_patch = "app.collectors.windows.network_collector.psutil.net_io_counters"
     net_if_patch = "app.collectors.windows.network_collector.psutil.net_if_stats"

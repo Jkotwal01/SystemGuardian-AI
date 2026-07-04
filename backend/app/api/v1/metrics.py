@@ -33,6 +33,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 # ── Response models ───────────────────────────────────────────────────────────
 
+
 class LiveMetricsResponse(BaseModel):
     hardware: HardwareMetricRead | None = None
     disks: list[DiskMetricRead] = []
@@ -55,6 +56,7 @@ class NetworkHistoryResponse(BaseModel):
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
+
 
 @router.get("/live", response_model=LiveMetricsResponse)
 async def get_live_metrics(

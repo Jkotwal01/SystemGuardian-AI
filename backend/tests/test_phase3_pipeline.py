@@ -36,6 +36,7 @@ from app.processors.severity import (
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 def make_event(
     source_id: str | None = None,
     category: EventCategory = EventCategory.SECURITY,
@@ -65,6 +66,7 @@ def make_event(
 # ═══════════════════════════════════════════════════════════════════════════════
 # SEVERITY CLASSIFIER TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestEscalateSeverity:
     def test_escalate_info_by_one(self) -> None:
@@ -113,20 +115,20 @@ class TestWindowsEventIdSeverityStrategy:
 class TestFrequencyEscalationStrategy:
     @pytest.mark.asyncio
     async def test_five_same_events_escalate_once(self) -> None:
-        strategy = FrequencyEscalationStrategy(recent_events=[
-            make_event(source_id="4625", severity=Severity.MEDIUM)
-            for _ in range(5)
-        ])
+        strategy = FrequencyEscalationStrategy(
+            recent_events=[make_event(source_id="4625", severity=Severity.MEDIUM) for _ in range(5)]
+        )
         event = make_event(source_id="4625", severity=Severity.MEDIUM)
         result = await strategy.classify(event)
         assert SEVERITY_ORDER[result] > SEVERITY_ORDER[Severity.MEDIUM]
 
     @pytest.mark.asyncio
     async def test_ten_same_events_escalate_twice(self) -> None:
-        strategy = FrequencyEscalationStrategy(recent_events=[
-            make_event(source_id="4625", severity=Severity.MEDIUM)
-            for _ in range(10)
-        ])
+        strategy = FrequencyEscalationStrategy(
+            recent_events=[
+                make_event(source_id="4625", severity=Severity.MEDIUM) for _ in range(10)
+            ]
+        )
         event = make_event(source_id="4625", severity=Severity.MEDIUM)
         result = await strategy.classify(event)
         # Escalated 2 steps from MEDIUM → CRITICAL
@@ -134,20 +136,21 @@ class TestFrequencyEscalationStrategy:
 
     @pytest.mark.asyncio
     async def test_few_events_no_escalation(self) -> None:
-        strategy = FrequencyEscalationStrategy(recent_events=[
-            make_event(source_id="4625")
-            for _ in range(3)
-        ])
+        strategy = FrequencyEscalationStrategy(
+            recent_events=[make_event(source_id="4625") for _ in range(3)]
+        )
         event = make_event(source_id="4625", severity=Severity.INFO)
         result = await strategy.classify(event)
         assert result == Severity.INFO
 
     @pytest.mark.asyncio
     async def test_old_events_outside_window_ignored(self) -> None:
-        strategy = FrequencyEscalationStrategy(recent_events=[
-            make_event(source_id="4625", minutes_ago=20)  # outside 10-min window
-            for _ in range(10)
-        ])
+        strategy = FrequencyEscalationStrategy(
+            recent_events=[
+                make_event(source_id="4625", minutes_ago=20)  # outside 10-min window
+                for _ in range(10)
+            ]
+        )
         event = make_event(source_id="4625", severity=Severity.LOW)
         result = await strategy.classify(event)
         assert result == Severity.LOW
@@ -178,6 +181,7 @@ class TestCompositeSeverityClassifier:
 # ═══════════════════════════════════════════════════════════════════════════════
 # EVENT CORRELATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestSameSourceIdRule:
     def test_same_source_id_matches(self) -> None:
@@ -279,6 +283,7 @@ class TestEventCorrelator:
 # HEALTH SCORE ENGINE TESTS (pure computation — no DB needed)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestHealthScoreEngine:
     def _engine(self) -> HealthScoreEngine:
         return HealthScoreEngine()
@@ -314,10 +319,10 @@ class TestHealthScoreEngine:
         # -45 (crit cap) + -25 (high cap) + -20 (login cap) + -15 (total cap)
         # = -105 → clamped to 0
         factors = ScoreFactors(
-            critical_events_24h=3,     # 3*15 = 45 (max cap)
-            high_events_24h=4,         # 4*8  = 32 → capped at 25
-            failed_logins_24h=7,       # 7*3  = 21 → capped at 20
-            security_events_24h=15,    # 15*1 = 15 → capped at 15
+            critical_events_24h=3,  # 3*15 = 45 (max cap)
+            high_events_24h=4,  # 4*8  = 32 → capped at 25
+            failed_logins_24h=7,  # 7*3  = 21 → capped at 20
+            security_events_24h=15,  # 15*1 = 15 → capped at 15
         )
         assert engine.compute_security_score(factors) == 0
 
@@ -345,7 +350,7 @@ class TestHealthScoreEngine:
     def test_overall_score_with_mixed_sub_scores(self) -> None:
         engine = self._engine()
         sub_scores = {
-            "security": 0,    # 30% weight
+            "security": 0,  # 30% weight
             "performance": 100,
             "hardware": 100,
             "network": 100,
@@ -358,6 +363,7 @@ class TestHealthScoreEngine:
 # ═══════════════════════════════════════════════════════════════════════════════
 # EVENT ENRICHER TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestEventEnricher:
     @pytest.mark.asyncio
@@ -396,6 +402,7 @@ class TestEventEnricher:
 # ═══════════════════════════════════════════════════════════════════════════════
 # EVENT BUS TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestEventBus:
     @pytest.mark.asyncio

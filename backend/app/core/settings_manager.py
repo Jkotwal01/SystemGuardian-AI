@@ -1,6 +1,6 @@
 import structlog
-from typing import Any
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from app.repositories.setting_repository import SettingRepository
 
 logger = structlog.get_logger(__name__)
@@ -27,14 +27,16 @@ DEFAULTS = {
     "onboarding_complete": "false",
 }
 
+
 class SettingsManager:
     """
     Global in-memory cache for database settings.
     Allows hot-reloading of configuration across the backend.
     """
+
     _instance = None
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]):
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
         self._cache: dict[str, str] = dict(DEFAULTS)
 
@@ -55,12 +57,12 @@ class SettingsManager:
         async with self._session_factory() as session:
             repo = SettingRepository(session)
             all_settings = await repo.get_all(limit=500)
-            
+
             # Reset to defaults first
             new_cache = dict(DEFAULTS)
             for s in all_settings:
                 new_cache[s.key] = s.value
-            
+
             self._cache = new_cache
             logger.debug("settings_manager.reloaded", keys=len(self._cache))
 

@@ -27,7 +27,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-def get_ai_assistant(request: Request) -> "AIAssistant":
+def get_ai_assistant(request: Request) -> AIAssistant:
     """Dependency to retrieve the AIAssistant instance from app state."""
     # We will inject this from main.py via request.app.state
     if not hasattr(request.app.state, "ai_assistant"):

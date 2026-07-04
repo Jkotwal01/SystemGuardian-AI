@@ -18,7 +18,7 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 class AIStatusResponse(BaseModel):
     ollama_available: bool
     gemini_available: bool
-    active_provider: str   # "ollama" | "gemini" | "none"
+    active_provider: str  # "ollama" | "gemini" | "none"
     ollama_model: str
 
 
@@ -51,6 +51,7 @@ async def get_ai_status() -> AIStatusResponse:
         active = "none"
 
     from app.config import get_settings
+
     settings = get_settings()
 
     return AIStatusResponse(

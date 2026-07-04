@@ -160,12 +160,13 @@ class MonitoringScheduler:
     async def _collect_metrics(self) -> None:
         """Collect hardware/performance metrics via orchestrator (dynamically throttled)."""
         import time
+
         now = time.time()
         interval = SettingsManager.get_instance().get_int("metrics_interval_seconds", 30)
         if now - self._last_metrics_run < interval:
             return
         self._last_metrics_run = now
-        
+
         try:
             async with self._session_factory() as session:
                 results = await self._orchestrator.run_metric_collectors(session)
@@ -176,6 +177,7 @@ class MonitoringScheduler:
     async def _collect_events(self) -> None:
         """Collect OS event logs (dynamically throttled)."""
         import time
+
         now = time.time()
         interval = SettingsManager.get_instance().get_int("event_poll_interval_seconds", 60)
         if now - self._last_events_run < interval:
@@ -215,6 +217,7 @@ class MonitoringScheduler:
         """
         try:
             from app.engines.prediction_engine import PredictionEngine
+
             async with self._session_factory() as session:
                 engine = PredictionEngine()
                 await engine.run(session)

@@ -11,9 +11,11 @@ logger = logging.getLogger(__name__)
 
 ws_router = APIRouter(tags=["websocket"])
 
+
 class ConnectionManager:
     """Manages WebSocket connections. Thread-safe."""
-    def __init__(self):
+
+    def __init__(self) -> None:
         self._connections: set[WebSocket] = set()
         self._lock = asyncio.Lock()
 
@@ -35,18 +37,20 @@ class ConnectionManager:
                 await ws.send_json(message)
             except Exception:
                 dead.add(ws)
-        
+
         if dead:
             async with self._lock:
                 self._connections -= dead
 
+
 metrics_manager = ConnectionManager()
 events_manager = ConnectionManager()
+
 
 # Background task to bridge EventBus and WebSockets
 async def setup_websocket_bridge() -> None:
     """Subscribes to EventBus and broadcasts over WebSockets."""
-    
+
     async def on_health_score(score: Any) -> None:
         if hasattr(score, "model_dump"):
             data = score.model_dump(mode="json")
@@ -70,7 +74,11 @@ async def setup_websocket_bridge() -> None:
         await events_manager.broadcast({"type": "incident_updated", "data": data})
 
     async def on_notification_ready(notification: Any) -> None:
-        data = notification.model_dump(mode="json") if hasattr(notification, "model_dump") else notification
+        data = (
+            notification.model_dump(mode="json")
+            if hasattr(notification, "model_dump")
+            else notification
+        )
         if hasattr(notification, "created_at") and not isinstance(data.get("created_at"), str):
             data["created_at"] = notification.created_at.isoformat()
         await events_manager.broadcast({"type": "notification", "data": data})
@@ -95,6 +103,7 @@ async def metrics_ws(websocket: WebSocket) -> None:
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
         await metrics_manager.disconnect(websocket)
+
 
 @ws_router.websocket("/ws/events")
 async def events_ws(websocket: WebSocket) -> None:

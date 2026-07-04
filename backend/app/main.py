@@ -17,25 +17,24 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import v1_router
-from app.api.v1.ai_status import router as ai_status_router
-from app.api.v1.events import router as events_router
-from app.api.v1.health_score import router as health_router
-from app.api.v1.incidents import router as incidents_router
-from app.api.v1.metrics import router as metrics_router
-from app.api.v1.security import router as security_router
-from app.api.v1.chat import router as chat_router
-from app.api.v1.predictions import router as predictions_router
-from app.api.v1.notifications import router as notifications_router
-from app.api.v1.reports import router as reports_router
-from app.api.v1.settings import router as settings_router
-from app.api.v1.system import router as system_router
-from app.api.websocket import setup_websocket_bridge, ws_router
 from app.ai.assistant import AIAssistant
 from app.ai.explanation_engine import ExplanationEngine
 from app.ai.fallback_provider import FallbackAIProvider
 from app.ai.providers.gemini import GeminiProvider
 from app.ai.providers.ollama import OllamaProvider
+from app.api.v1.ai_status import router as ai_status_router
+from app.api.v1.chat import router as chat_router
+from app.api.v1.events import router as events_router
+from app.api.v1.health_score import router as health_router
+from app.api.v1.incidents import router as incidents_router
+from app.api.v1.metrics import router as metrics_router
+from app.api.v1.notifications import router as notifications_router
+from app.api.v1.predictions import router as predictions_router
+from app.api.v1.reports import router as reports_router
+from app.api.v1.security import router as security_router
+from app.api.v1.settings import router as settings_router
+from app.api.v1.system import router as system_router
+from app.api.websocket import setup_websocket_bridge, ws_router
 from app.collectors.orchestrator import CollectorOrchestrator
 from app.config import get_settings
 from app.core.database import DatabaseManager
@@ -71,7 +70,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # ── Phase 1: Database & Settings ──────────────────────────────────────────
     await DatabaseManager.initialize(settings.db_path)
     logger.info("database_initialized", db_path=str(settings.db_path))
-    
+
     session_factory = DatabaseManager.get_session_factory()
     settings_mgr = SettingsManager.initialize(session_factory)
     await settings_mgr.load()
@@ -84,10 +83,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # ── Phase 3: Processing Pipeline + Engines + Scheduler ─────────────────────
     # ── Phase 6: AI Integration Layer ────────────────────────────────
-    ai_provider = FallbackAIProvider([
-        OllamaProvider(),
-        GeminiProvider(),
-    ])
+    ai_provider = FallbackAIProvider(
+        [
+            OllamaProvider(),
+            GeminiProvider(),
+        ]
+    )
     explanation_engine = ExplanationEngine(ai_provider, session_factory)
     logger.info("ai_provider_initialized", providers=["ollama", "gemini"])
 

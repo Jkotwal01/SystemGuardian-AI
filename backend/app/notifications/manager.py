@@ -1,25 +1,30 @@
-from datetime import datetime, timezone, timedelta
-from typing import Callable, Coroutine, Any
+from datetime import UTC, datetime, timedelta
+from typing import Any
+
 import structlog
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from app.core.event_bus import event_bus
-from app.processors.pipeline import Events
+from app.domain.enums import Severity
 from app.models.incident import IncidentModel
 from app.models.notification import NotificationModel
+from app.processors.pipeline import Events
 from app.repositories.notification_repository import NotificationRepository
-from app.domain.enums import Severity
 
 logger = structlog.get_logger(__name__)
 
+
 def utcnow() -> datetime:
-    return datetime.now(tz=timezone.utc)
+    return datetime.now(tz=UTC)
+
 
 class NotificationManager:
     """
     Observer: subscribes to EventBus.
     Manages cooldown, dedup, and routing to channels.
     """
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]):
+
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
         self._cooldown_cache: dict[str, datetime] = {}
 
@@ -41,12 +46,12 @@ class NotificationManager:
         if severity in (Severity.CRITICAL, Severity.HIGH):
             title = threat.get("title") if isinstance(threat, dict) else threat.title
             desc = threat.get("description") if isinstance(threat, dict) else threat.description
-            
+
             notif = NotificationModel(
                 title=f"Security Threat: {title}",
                 message=desc,
                 severity=severity,
-                action_url="/security"
+                action_url="/security",
             )
             await self._dispatch("security_threat", notif)
 
@@ -56,7 +61,7 @@ class NotificationManager:
                 title=f"New Incident: {incident.title}",
                 message=incident.description,
                 severity=incident.severity,
-                action_url=f"/incidents/{incident.id}"
+                action_url=f"/incidents/{incident.id}",
             )
             await self._dispatch("incident", notif)
 
@@ -66,7 +71,7 @@ class NotificationManager:
                 title="System Prediction Alert",
                 message=prediction.reason,
                 severity=prediction.severity,
-                action_url="/overview"
+                action_url="/overview",
             )
             await self._dispatch("prediction", notif)
 
@@ -78,7 +83,7 @@ class NotificationManager:
         async with self._session_factory() as session:
             repo = NotificationRepository(session)
             await repo.save(notification)
-            
+
         self._cooldown_cache[cooldown_key] = utcnow()
         await event_bus.publish(Events.NOTIFICATION_READY, notification)
         logger.info("notification.dispatched", title=notification.title)
