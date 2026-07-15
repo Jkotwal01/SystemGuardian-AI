@@ -1,6 +1,6 @@
 use std::{
     net::TcpStream,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Child, Command, Stdio},
     sync::Mutex,
     thread,
@@ -27,8 +27,8 @@ fn find_project_root() -> Option<PathBuf> {
 
 /// Spawn `uvicorn app.main:app --host 127.0.0.1 --port 8765` using the
 /// virtual-env Python in `<root>/backend/.venv`.
-fn spawn_backend(root: &PathBuf) -> std::io::Result<Child> {
-    let backend_dir = root.join("backend");
+fn spawn_backend(root: &Path) -> std::io::Result<Child> {
+        let backend_dir = root.join("backend");
 
     // Prefer the venv uvicorn; fall back to system uvicorn
     #[cfg(target_os = "windows")]
