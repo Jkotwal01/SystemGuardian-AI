@@ -30,12 +30,15 @@ def mock_settings() -> MagicMock:
 
 
 @pytest.fixture()
-def mock_session() -> AsyncMock:
-    return AsyncMock()
+def mock_session() -> MagicMock:
+    m = MagicMock()
+    m.commit = AsyncMock()
+    m.refresh = AsyncMock()
+    return m
 
 
 @pytest.fixture()
-def collector(mock_settings: MagicMock, mock_session: AsyncMock) -> StorageCollector:
+def collector(mock_settings: MagicMock, mock_session: MagicMock) -> StorageCollector:
     c = StorageCollector(mock_settings, mock_session)
     c._repo = AsyncMock()
     c._repo.save = AsyncMock(side_effect=lambda e: e)

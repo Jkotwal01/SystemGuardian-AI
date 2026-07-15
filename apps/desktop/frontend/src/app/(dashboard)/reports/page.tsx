@@ -15,10 +15,6 @@ export default function ReportsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
-
   async function fetchReports() {
     try {
       const data = await api.reports.list();
@@ -29,6 +25,10 @@ export default function ReportsPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
 
   async function handleGenerate(type: "daily" | "weekly") {
     setGenerating(true);

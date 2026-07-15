@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -10,6 +10,8 @@ from app.config import get_settings
 def collector():
     settings = get_settings()
     session_mock = MagicMock()
+    session_mock.commit = AsyncMock()
+    session_mock.refresh = AsyncMock()
     return NetworkCollector(settings, session_mock)
 
 

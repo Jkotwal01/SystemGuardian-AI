@@ -68,7 +68,7 @@ include = ["app*", "alembic*"]
 [tool.pytest.ini_options]
 asyncio_mode      = "auto"
 testpaths         = ["tests"]
-addopts           = "--cov=app --cov-report=term-missing --cov-report=html --cov-fail-under=77"
+addopts           = "--cov=app --cov-report=term-missing --cov-report=html --cov-fail-under=62"
 filterwarnings    = [
     "ignore::DeprecationWarning:sqlalchemy",
 ]

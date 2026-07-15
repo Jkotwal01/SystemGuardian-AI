@@ -45,6 +45,14 @@ export default function AiAssistantPage() {
     fetchSessions();
   }, []);
 
+  const handleNewChat = () => {
+    const newId = "session-" + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem("system_guardian_chat_session", newId);
+    setSessionId(newId);
+    setMessages([]);
+    setError(null);
+  };
+
   useEffect(() => {
     const stored = localStorage.getItem("system_guardian_chat_session");
     if (stored) {
@@ -53,14 +61,6 @@ export default function AiAssistantPage() {
       handleNewChat();
     }
   }, []);
-
-  const handleNewChat = () => {
-    const newId = "session-" + Math.random().toString(36).substring(2, 10);
-    localStorage.setItem("system_guardian_chat_session", newId);
-    setSessionId(newId);
-    setMessages([]);
-    setError(null);
-  };
 
   const handleSelectSession = (id: string) => {
     localStorage.setItem("system_guardian_chat_session", id);
