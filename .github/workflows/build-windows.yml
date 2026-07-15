@@ -39,6 +39,7 @@ jobs:
           pyinstaller `
             --name sgai-backend `
             --onefile `
+            --distpath dist `
             --hidden-import uvicorn.logging `
             --hidden-import uvicorn.loops.auto `
             --hidden-import uvicorn.protocols.http.auto `
@@ -47,6 +48,14 @@ jobs:
             --add-data "alembic;alembic" `
             --add-data "alembic.ini;." `
             app/main.py
+
+      - name: Verify backend executable was created
+        run: |
+          if (-not (Test-Path "backend/dist/sgai-backend.exe")) {
+            Write-Error "Backend exe not found at backend/dist/sgai-backend.exe"
+            exit 1
+          }
+          Write-Host "Backend exe found: $(Get-Item 'backend/dist/sgai-backend.exe' | Select-Object -ExpandProperty Length) bytes"
 
       # ── Node.js (frontend) ────────────────────────────────────────────────
       - name: Set up Node.js
@@ -77,10 +86,6 @@ jobs:
         run: winget install --id Microsoft.EdgeWebView2Runtime -e --source winget --accept-package-agreements --accept-source-agreements
         continue-on-error: true
 
-      - name: Copy backend executable into Tauri resources
-        run: |
-          New-Item -ItemType Directory -Force -Path "apps/desktop/src-tauri/resources"
-          Copy-Item "backend/dist/sgai-backend.exe" "apps/desktop/src-tauri/resources/"
 
       - name: Build Tauri installer
         working-directory: apps/desktop
