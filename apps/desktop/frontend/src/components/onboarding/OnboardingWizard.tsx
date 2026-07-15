@@ -24,7 +24,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
 
   // Fetch initial defaults
   useEffect(() => {
-    api.settings.get().then(data => {
+    api.settings.get().then((data: AppSettings) => {
       if (data.onboarding_complete === "true") {
         onComplete();
       } else {
@@ -33,7 +33,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
     }).catch(console.error);
   }, [onComplete]);
 
-  const update = (k: keyof AppSettings, v: string) => setSettings(s => ({ ...s, [k]: v }));
+  const update = (k: keyof AppSettings, v: string) => setSettings((s: Partial<AppSettings>) => ({ ...s, [k]: v }));
 
   async function handleTestAI() {
     setTesting(true);

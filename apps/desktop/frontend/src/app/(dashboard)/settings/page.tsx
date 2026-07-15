@@ -98,7 +98,7 @@ export default function SettingsPage() {
   useEffect(() => { fetchSettings(); }, [fetchSettings]);
 
   function updateSetting(key: string, value: string) {
-    setSettings(prev => prev ? { ...prev, [key]: value } : prev);
+    setSettings((prev: AppSettings | null) => prev ? { ...prev, [key]: value } : prev);
     setSaved(false);
     setTestResult(null);
   }

@@ -305,8 +305,8 @@ export default function NetworkPage() {
         setLoading(false);
 
         // Aggregate total upload + download across all interfaces
-        const totalUp = nets.reduce((s, m) => s + m.bytes_sent_per_sec, 0);
-        const totalDown = nets.reduce((s, m) => s + m.bytes_recv_per_sec, 0);
+        const totalUp = nets.reduce((s: number, m: NetworkMetricRead) => s + m.bytes_sent_per_sec, 0);
+        const totalDown = nets.reduce((s: number, m: NetworkMetricRead) => s + m.bytes_recv_per_sec, 0);
 
         prevUpload.current = uploadHistory[uploadHistory.length - 1] ?? 0;
         prevDownload.current = downloadHistory[downloadHistory.length - 1] ?? 0;

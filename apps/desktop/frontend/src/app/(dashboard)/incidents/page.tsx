@@ -5,7 +5,7 @@ import { useIncidentStore } from "@/stores/incident-store";
 import { formatDistanceToNow, format } from "date-fns";
 import { AlertTriangle, CheckCircle2, ShieldAlert, AlertCircle, Info, Check, X, Filter } from "lucide-react";
 import { EventDetailModal } from "@/components/events/EventDetailModal";
-import { IncidentStatus } from "@/lib/types";
+import { EventRead, IncidentStatus } from "@/lib/types";
 
 type FilterTab = "open" | "investigating" | "resolved" | "all";
 
@@ -226,7 +226,7 @@ export default function IncidentsPage() {
                     </div>
                   ) : (
                     <div className="relative pl-6 border-l border-[var(--color-surface-700)] flex flex-col gap-6 ml-2">
-                      {selectedIncident.events.map((event) => (
+                      {selectedIncident.events.map((event: EventRead) => (
                          <div key={event.id} className="relative">
                             <div className={`absolute -left-[29px] top-1.5 w-2.5 h-2.5 rounded-full ring-4 ring-[var(--color-surface-900)] bg-severity-${event.severity}`} />
                             <button

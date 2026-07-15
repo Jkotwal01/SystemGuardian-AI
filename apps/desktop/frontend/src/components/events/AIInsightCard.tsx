@@ -108,7 +108,7 @@ export function AIInsightCard({ insight, loading = false }: Props) {
 
       {/* Explanation lines */}
       <div className="space-y-3.5 pl-1">
-        {lines.map((line, i) => {
+        {lines.map((line: string, i: number) => {
           const cleanLine = line.trim();
           const isBullet = cleanLine.startsWith("-") || cleanLine.startsWith("•") || cleanLine.startsWith("*");
           const isNumbered = /^\d+\./.test(cleanLine);
