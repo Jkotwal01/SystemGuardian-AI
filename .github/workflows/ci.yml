@@ -115,6 +115,11 @@ jobs:
         run: winget install --id Microsoft.EdgeWebView2Runtime -e --source winget --accept-package-agreements --accept-source-agreements
         continue-on-error: true
 
+      - name: Create dummy backend executable for Tauri build script
+        run: |
+          New-Item -Path ../../backend/dist -ItemType Directory -Force
+          New-Item -Path ../../backend/dist/sgai-backend.exe -ItemType File -Value "dummy"
+
       - name: cargo fmt check
         run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 
