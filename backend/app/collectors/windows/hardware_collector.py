@@ -45,7 +45,11 @@ class HardwareCollector(BaseCollector, EventNormalizerMixin):
         if battery is not None:
             metrics["battery_percent"] = round(battery.percent, 1)
             metrics["battery_plugged"] = battery.power_plugged
-            metrics["battery_secs_left"] = battery.secsleft if battery.secsleft > 0 else None
+            # Ignore weird max-uint32 values (like 4294967295) returned by Windows when unknown
+            if battery.secsleft > 0 and battery.secsleft < 100_000_000:
+                metrics["battery_secs_left"] = battery.secsleft
+            else:
+                metrics["battery_secs_left"] = None
         else:
             metrics["battery_percent"] = None
 
@@ -87,7 +91,7 @@ class HardwareCollector(BaseCollector, EventNormalizerMixin):
         # Save time-series metric row for the API
         metric_repo = HardwareMetricRepository(self._session)
         hw_metric = HardwareMetricModel(
-            cpu_usage_percent=psutil.cpu_percent(),
+            cpu_usage_percent=psutil.cpu_percent(interval=0.1),
             memory_usage_percent=mem.percent,
             memory_total_bytes=mem.total,
             memory_available_bytes=mem.available,

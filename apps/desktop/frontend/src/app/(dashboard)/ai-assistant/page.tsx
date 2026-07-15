@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, User, AlertCircle, Loader2, Cpu, ShieldAlert, Wifi, Sparkles, Activity } from "lucide-react";
+import { Bot, Send, User, AlertCircle, Cpu, ShieldAlert, Wifi, Sparkles, Activity, Plus, MessageSquare, Trash2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { api } from "@/lib/api-client";
-import { ChatMessageRead } from "@/lib/types";
+import { ChatMessageRead, ChatSessionRead } from "@/lib/types";
 
 const SUGGESTED_PROMPTS = [
   { icon: Cpu, label: "Hardware Status", prompt: "Is my CPU running too hot? What's the current temperature?", color: "text-blue-400", bg: "bg-blue-400/10" },
@@ -16,6 +16,7 @@ const SUGGESTED_PROMPTS = [
 
 export default function AiAssistantPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<ChatSessionRead[]>([]);
   const [messages, setMessages] = useState<ChatMessageRead[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -31,16 +32,55 @@ export default function AiAssistantPage() {
     scrollToBottom();
   }, [messages, isStreaming]);
 
+  const fetchSessions = async () => {
+    try {
+      const data = await api.chat.getSessions();
+      setSessions(data);
+    } catch (err) {
+      console.error("Failed to fetch sessions", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
   useEffect(() => {
     const stored = localStorage.getItem("system_guardian_chat_session");
     if (stored) {
       setSessionId(stored);
     } else {
-      const newId = "session-" + Math.random().toString(36).substring(2, 10);
-      localStorage.setItem("system_guardian_chat_session", newId);
-      setSessionId(newId);
+      handleNewChat();
     }
   }, []);
+
+  const handleNewChat = () => {
+    const newId = "session-" + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem("system_guardian_chat_session", newId);
+    setSessionId(newId);
+    setMessages([]);
+    setError(null);
+  };
+
+  const handleSelectSession = (id: string) => {
+    localStorage.setItem("system_guardian_chat_session", id);
+    setSessionId(id);
+    setMessages([]);
+    setError(null);
+  };
+
+  const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    try {
+      await api.chat.deleteSession(id);
+      if (sessionId === id) {
+        handleNewChat();
+      }
+      await fetchSessions();
+    } catch (err) {
+      console.error("Failed to delete session", err);
+    }
+  };
 
   useEffect(() => {
     if (!sessionId) return;
@@ -135,6 +175,7 @@ export default function AiAssistantPage() {
       setMessages(prev => prev.filter(m => m.id !== assistantMsgId)); // Remove empty assistant bubble on error
     } finally {
       setIsStreaming(false);
+      fetchSessions();
     }
   };
 
@@ -144,12 +185,10 @@ export default function AiAssistantPage() {
   };
 
   return (
-    <div className="flex-1 flex min-h-0 h-full bg-[var(--color-surface-950)] overflow-hidden">
-      
+    <div className="flex h-full w-full bg-[var(--color-surface-950)] overflow-hidden">
+
       {/* ── Main Chat Area ── */}
-      <div className="flex-1 flex flex-col relative min-w-0">
-        
-        {/* Header */}
+      <div className="flex-1 flex flex-col relative min-w-0 min-h-0">
         <div className="flex items-center justify-between px-8 py-4 border-b border-[var(--color-surface-800)] bg-[var(--color-surface-900)]/60 backdrop-blur-md z-20 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
@@ -165,7 +204,7 @@ export default function AiAssistantPage() {
         </div>
 
         {/* Messages Scroll Area */}
-        <div className="flex-1 overflow-y-auto pb-40 scroll-smooth relative">
+        <div className="flex-1 min-h-0 overflow-y-auto scroll-smooth">
           
           {messages.length === 0 ? (
             /* ── Empty State ── */
@@ -254,12 +293,12 @@ export default function AiAssistantPage() {
           )}
         </div>
 
-        {/* ── Floating Input Area ── */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[var(--color-surface-950)] via-[var(--color-surface-950)] to-transparent pt-12 pb-8 px-6 z-20">
-          <div className="max-w-3xl mx-auto w-full relative">
-            
+        {/* ── Input Area ── */}
+        <div className="flex-shrink-0 border-t border-[var(--color-surface-800)] bg-[var(--color-surface-950)] px-6 py-4">
+          <div className="max-w-3xl mx-auto w-full">
+
             {error && (
-              <div className="absolute -top-12 left-0 right-0 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center gap-2 text-[12px] font-medium backdrop-blur-md shadow-lg animate-fade-in-up">
+              <div className="mb-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center gap-2 text-[12px] font-medium animate-fade-in-up">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate">{error}</span>
               </div>
@@ -271,7 +310,7 @@ export default function AiAssistantPage() {
                 onChange={(e) => {
                   setInput(e.target.value);
                   e.target.style.height = 'auto';
-                  e.target.style.height = `${Math.min(e.target.scrollHeight, 250)}px`;
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -280,7 +319,7 @@ export default function AiAssistantPage() {
                   }
                 }}
                 placeholder="Ask SystemGuardian anything..."
-                className="w-full bg-transparent border-none pt-4 pb-4 pl-5 pr-14 text-[15px] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-0 resize-none min-h-[56px] max-h-[250px] leading-relaxed scrollbar-thin scrollbar-thumb-[var(--color-surface-600)]"
+                className="w-full bg-transparent border-none pt-4 pb-4 pl-5 pr-14 text-[15px] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-0 resize-none min-h-[56px] max-h-[200px] leading-relaxed scrollbar-thin scrollbar-thumb-[var(--color-surface-600)]"
                 rows={1}
                 disabled={isStreaming}
               />
@@ -292,7 +331,8 @@ export default function AiAssistantPage() {
                 <Send className="w-[18px] h-[18px] ml-0.5" />
               </button>
             </form>
-            <div className="text-center mt-4">
+
+            <div className="text-center mt-3">
               <span className="text-[11px] text-[var(--color-text-muted)] font-medium">
                 AI can make mistakes. Check important system metrics manually.
               </span>
@@ -301,50 +341,109 @@ export default function AiAssistantPage() {
         </div>
       </div>
 
-      {/* ── Right Sidebar: Capabilities Showcase ── */}
-      <div className="hidden xl:flex w-80 border-l border-[var(--color-surface-800)] bg-[var(--color-surface-900)]/30 flex-col p-8 overflow-y-auto">
-        <h3 className="text-[11px] font-bold text-[var(--color-text-secondary)] mb-6 uppercase tracking-widest flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5" /> Capabilities
-        </h3>
+      {/* ── Right Sidebar: Capabilities + Chat History ── */}
+      <div className="hidden xl:flex w-80 min-h-0 border-l border-[var(--color-surface-800)] bg-[var(--color-surface-900)]/30 flex-col p-6 overflow-y-auto gap-6">
         
-        <div className="flex flex-col gap-5">
-          
-          <div className="glass-card p-4 rounded-2xl border border-[var(--color-surface-700)]">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3">
-              <Activity className="w-4 h-4 text-blue-400" />
+        {/* Capabilities Section */}
+        <div>
+          <h3 className="text-[11px] font-bold text-[var(--color-text-secondary)] mb-4 uppercase tracking-widest flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" /> Capabilities
+          </h3>
+          <div className="flex flex-col gap-4">
+            <div className="glass-card p-4 rounded-2xl border border-[var(--color-surface-700)]">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3">
+                <Activity className="w-4 h-4 text-blue-400" />
+              </div>
+              <h4 className="text-[13px] font-semibold text-[var(--color-text-primary)] mb-1.5">
+                Live Hardware Diagnostics
+              </h4>
+              <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+                Fetches up-to-the-second CPU, memory, and thermal data before answering hardware queries.
+              </p>
             </div>
-            <h4 className="text-[13px] font-semibold text-[var(--color-text-primary)] mb-1.5">
-              Live Hardware Diagnostics
-            </h4>
-            <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
-              Fetches up-to-the-second CPU, memory, and thermal data before answering hardware queries.
-            </p>
-          </div>
 
-          <div className="glass-card p-4 rounded-2xl border border-[var(--color-surface-700)]">
-            <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center mb-3">
-              <ShieldAlert className="w-4 h-4 text-rose-400" />
+            <div className="glass-card p-4 rounded-2xl border border-[var(--color-surface-700)]">
+              <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center mb-3">
+                <ShieldAlert className="w-4 h-4 text-rose-400" />
+              </div>
+              <h4 className="text-[13px] font-semibold text-[var(--color-text-primary)] mb-1.5">
+                Security Event Analysis
+              </h4>
+              <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+                Analyzes raw Windows Event Logs to summarize failed logins or suspicious background processes.
+              </p>
             </div>
-            <h4 className="text-[13px] font-semibold text-[var(--color-text-primary)] mb-1.5">
-              Security Event Analysis
-            </h4>
-            <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
-              Analyzes raw Windows Event Logs to summarize failed logins or suspicious background processes.
-            </p>
-          </div>
 
-          <div className="glass-card p-4 rounded-2xl border border-[var(--color-surface-700)]">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3">
-              <Bot className="w-4 h-4 text-emerald-400" />
+            <div className="glass-card p-4 rounded-2xl border border-[var(--color-surface-700)]">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3">
+                <Bot className="w-4 h-4 text-emerald-400" />
+              </div>
+              <h4 className="text-[13px] font-semibold text-[var(--color-text-primary)] mb-1.5">
+                Local Privacy
+              </h4>
+              <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+                When using Ollama, all analysis happens entirely offline. System data never leaves your machine.
+              </p>
             </div>
-            <h4 className="text-[13px] font-semibold text-[var(--color-text-primary)] mb-1.5">
-              Local Privacy
-            </h4>
-            <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
-              When using Ollama, all analysis happens entirely offline. System data never leaves your machine.
-            </p>
           </div>
-          
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-[var(--color-surface-700)]" />
+
+        {/* Chat History Section */}
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* New Chat Button */}
+          <button
+            onClick={handleNewChat}
+            className="flex items-center justify-center gap-2 w-full p-3 mb-4 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 hover:opacity-90 text-white font-semibold transition-all shadow-[0_4px_14px_rgba(99,102,241,0.25)] active:scale-95"
+          >
+            <Plus className="w-4 h-4" />
+            New Chat
+          </button>
+
+          <h3 className="text-[11px] font-bold text-[var(--color-text-secondary)] mb-3 uppercase tracking-widest pl-1">
+            Recent Chats
+          </h3>
+
+          <div className="flex flex-col gap-1.5 overflow-y-auto flex-1">
+            {sessions.map((session) => (
+              <div
+                key={session.session_id}
+                onClick={() => handleSelectSession(session.session_id)}
+                className={`flex items-center gap-2 p-2.5 rounded-xl transition-all cursor-pointer group ${
+                  sessionId === session.session_id
+                    ? "bg-indigo-500/10 border border-indigo-500/20"
+                    : "border border-transparent hover:bg-[var(--color-surface-800)]"
+                }`}
+              >
+                <MessageSquare className={`w-4 h-4 flex-shrink-0 ${
+                  sessionId === session.session_id ? 'text-indigo-400' : 'text-zinc-500 group-hover:text-zinc-400'
+                }`} />
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className={`text-[12px] font-medium truncate ${
+                    sessionId === session.session_id ? 'text-indigo-300' : 'text-[var(--color-text-muted)] group-hover:text-[var(--color-text-primary)]'
+                  }`}>{session.title}</span>
+                  <span className="text-[10px] text-zinc-600 mt-0.5">
+                    {new Date(session.updated_at).toLocaleDateString()}
+                  </span>
+                </div>
+                {/* Delete button — only visible on hover */}
+                <button
+                  onClick={(e) => handleDeleteSession(e, session.session_id)}
+                  title="Delete chat"
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-zinc-600 hover:text-rose-400 hover:bg-rose-400/10 transition-all flex-shrink-0"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+            {sessions.length === 0 && (
+              <p className="text-[11px] text-[var(--color-text-muted)] text-center mt-3 p-3 bg-[var(--color-surface-800)]/50 rounded-xl border border-[var(--color-surface-700)]">
+                No past chats yet.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

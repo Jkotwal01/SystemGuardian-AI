@@ -85,7 +85,7 @@ export function SplashWrapper({ children }: { children: React.ReactNode }) {
       </div>
       
       {/* Pre-render children in background so they are ready when splash fades */}
-      <div className={fadeOut ? "opacity-100 transition-opacity duration-500 min-h-full flex flex-col" : "opacity-0 h-0 overflow-hidden"}>
+      <div className={fadeOut ? "opacity-100 transition-opacity duration-500 h-full flex flex-col" : "opacity-0 h-0 overflow-hidden"}>
         {children}
       </div>
     </>

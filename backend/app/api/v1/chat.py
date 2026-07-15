@@ -14,13 +14,36 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import DatabaseManager
 from app.repositories.chat_message_repository import ChatMessageRepository
-from app.schemas.chat import ChatMessageRead, ChatRequest
+from app.schemas.chat import ChatMessageRead, ChatRequest, ChatSessionRead
+
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with DatabaseManager.get_session_factory()() as session:
         yield session
+
+
+@router.get("/sessions", response_model=list[ChatSessionRead])
+async def get_chat_sessions(
+    limit: int = 15,
+    session: AsyncSession = Depends(get_session),
+) -> list[ChatSessionRead]:
+    """Retrieve all recent chat sessions."""
+    repo = ChatMessageRepository(session)
+    sessions = await repo.get_sessions(limit=limit)
+    return [ChatSessionRead.model_validate(s) for s in sessions]
+
+
+@router.delete("/sessions/{session_id}", response_model=dict)
+async def delete_chat_session(
+    session_id: str,
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Delete all messages for a chat session."""
+    repo = ChatMessageRepository(session)
+    deleted = await repo.delete_session(session_id)
+    return {"deleted": deleted, "session_id": session_id}
 
 
 def get_ai_assistant(request: Request) -> Any:

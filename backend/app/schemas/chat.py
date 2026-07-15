@@ -19,3 +19,11 @@ class ChatMessageRead(ChatMessageBase):
 class ChatRequest(BaseModel):
     session_id: str
     message: str
+
+
+class ChatSessionRead(BaseModel):
+    session_id: str
+    updated_at: datetime
+    title: str
+
+    model_config = ConfigDict(from_attributes=True)
