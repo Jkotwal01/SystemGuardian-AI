@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 
 from sqlalchemy import desc, select
 
@@ -28,7 +29,7 @@ class ChatMessageRepository(BaseRepository[ChatMessageModel]):
         messages.reverse()
         return messages
 
-    async def get_sessions(self, limit: int = 15) -> list[dict]:
+    async def get_sessions(self, limit: int = 15) -> list[dict[str, Any]]:
         """Get recent distinct sessions with their latest timestamp and title
         (derived from the first user message)."""
         from sqlalchemy import func
@@ -74,4 +75,4 @@ class ChatMessageRepository(BaseRepository[ChatMessageModel]):
         stmt = sql_delete(self.model).where(self.model.session_id == session_id)
         result = await self._session.execute(stmt)
         await self._session.commit()
-        return result.rowcount
+        return int(getattr(result, "rowcount", 0))

@@ -35,11 +35,11 @@ async def get_chat_sessions(
     return [ChatSessionRead.model_validate(s) for s in sessions]
 
 
-@router.delete("/sessions/{session_id}", response_model=dict)
+@router.delete("/sessions/{session_id}", response_model=dict[str, Any])
 async def delete_chat_session(
     session_id: str,
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     """Delete all messages for a chat session."""
     repo = ChatMessageRepository(session)
     deleted = await repo.delete_session(session_id)
