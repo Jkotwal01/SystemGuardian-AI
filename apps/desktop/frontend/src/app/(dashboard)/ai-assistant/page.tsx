@@ -144,7 +144,7 @@ export default function AiAssistantPage() {
   };
 
   return (
-    <div className="flex h-full bg-[var(--color-surface-950)] overflow-hidden">
+    <div className="flex-1 flex min-h-0 h-full bg-[var(--color-surface-950)] overflow-hidden">
       
       {/* ── Main Chat Area ── */}
       <div className="flex-1 flex flex-col relative min-w-0">

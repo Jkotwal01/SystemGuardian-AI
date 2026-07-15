@@ -14,7 +14,7 @@ export default function DashboardLayout({
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden m-0 md:m-2 bg-[var(--color-surface-900)] rounded-none md:rounded-xl border-x-0 md:border border-[var(--color-surface-700)] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]">
         <TopBar />
-        <main className="flex-1 overflow-y-auto relative">{children}</main>
+        <main className="flex-1 flex flex-col overflow-y-auto relative">{children}</main>
       </div>
     </div>
   );

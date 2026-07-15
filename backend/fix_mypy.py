@@ -1,4 +1,4 @@
-﻿import os
+# ruff: noqa: E501, UP015
 import re
 
 # 1. builder.py

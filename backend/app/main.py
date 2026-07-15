@@ -141,7 +141,7 @@ def create_app() -> FastAPI:
     # CORS: only allow the Tauri frontend origin
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "tauri://localhost"],
+        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "tauri://localhost", "http://localhost:1420", "http://127.0.0.1:1420"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

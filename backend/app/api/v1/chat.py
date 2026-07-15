@@ -6,20 +6,15 @@ from __future__ import annotations
 
 import json
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING
+from typing import Any
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Any
 
 from app.core.database import DatabaseManager
 from app.repositories.chat_message_repository import ChatMessageRepository
 from app.schemas.chat import ChatMessageRead, ChatRequest
-
-if TYPE_CHECKING:
-    from app.ai.assistant import AIAssistant
-
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 

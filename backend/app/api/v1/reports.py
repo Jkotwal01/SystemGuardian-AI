@@ -1,6 +1,6 @@
-from typing import Any
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import Response
@@ -8,10 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import DatabaseManager
 from app.domain.enums import ReportType
-from app.reports.builder import DailyReportBuilder, WeeklyReportBuilder, ReportBuilder
+from app.reports.builder import DailyReportBuilder, ReportBuilder, WeeklyReportBuilder
 from app.reports.exporters.factory import ExporterFactory
 from app.repositories.report_repository import ReportRepository
-
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 

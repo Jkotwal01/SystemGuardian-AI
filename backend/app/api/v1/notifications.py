@@ -1,5 +1,5 @@
-from typing import Any
 from collections.abc import AsyncGenerator
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
