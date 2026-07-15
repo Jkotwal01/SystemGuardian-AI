@@ -11,6 +11,7 @@ from app.domain.enums import ReportType
 from app.reports.builder import DailyReportBuilder, ReportBuilder, WeeklyReportBuilder
 from app.reports.exporters.factory import ExporterFactory
 from app.repositories.report_repository import ReportRepository
+
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 

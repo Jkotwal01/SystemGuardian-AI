@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import DatabaseManager
 from app.engines.prediction_engine import PredictionEngine
 from app.repositories.prediction_repository import PredictionRepository
+
 router = APIRouter(prefix="/predictions", tags=["predictions"])
 
 

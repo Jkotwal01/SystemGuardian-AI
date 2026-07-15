@@ -29,7 +29,8 @@ class ChatMessageRepository(BaseRepository[ChatMessageModel]):
         return messages
 
     async def get_sessions(self, limit: int = 15) -> list[dict]:
-        """Get recent distinct sessions with their latest timestamp and title (first user message)."""
+        """Get recent distinct sessions with their latest timestamp and title
+        (derived from the first user message)."""
         from sqlalchemy import func
         stmt = (
             select(self.model.session_id, func.max(self.model.timestamp).label("max_ts"))
